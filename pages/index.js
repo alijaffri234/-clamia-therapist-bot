@@ -2,12 +2,13 @@ import { useState } from 'react';
 
 export default function Home() {
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: "Hi, I’m Clamia. What’s your name?" }
+    { role: 'assistant', content: "Hi, I'm Clamia. I'm your AI therapist, trained to understand your emotions and provide personalized therapy sessions.\nI can guide you through various therapy techniques, emotional support, and mental well-being practices.\nWhat’s your name?" }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speechSynthesisInstance, setSpeechSynthesisInstance] = useState(null); // Track speech synthesis instance
 
   const sendMessage = async (userInput = null) => {
     const messageToSend = userInput || input;
@@ -61,9 +62,25 @@ export default function Home() {
     utterance.pitch = 1;
     utterance.rate = 1;
 
+    setSpeechSynthesisInstance(utterance); // Save the instance
     setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
     speechSynthesis.speak(utterance);
+
+    utterance.onend = () => setIsSpeaking(false);
+  };
+
+  const pauseSpeech = () => {
+    if (speechSynthesisInstance) {
+      speechSynthesis.pause();
+      setIsSpeaking(false);
+    }
+  };
+
+  const resumeSpeech = () => {
+    if (speechSynthesisInstance) {
+      speechSynthesis.resume();
+      setIsSpeaking(true);
+    }
   };
 
   return (
@@ -154,6 +171,28 @@ export default function Home() {
           background: '#fff',
         }}>
           🎤
+        </button>
+      </div>
+
+      <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+        {/* Play/Pause buttons */}
+        <button onClick={pauseSpeech} disabled={!isSpeaking} style={{
+          padding: '10px 16px',
+          borderRadius: '8px',
+          border: 'none',
+          background: '#ff6347',
+          color: 'white',
+        }}>
+          Pause
+        </button>
+        <button onClick={resumeSpeech} disabled={isSpeaking} style={{
+          padding: '10px 16px',
+          borderRadius: '8px',
+          border: 'none',
+          background: '#32cd32',
+          color: 'white',
+        }}>
+          Play
         </button>
       </div>
 
