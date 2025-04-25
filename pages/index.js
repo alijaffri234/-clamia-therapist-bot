@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 
 export default function Home() {
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: "Hi, I'm Clamia. I'm your AI therapist, trained to understand your emotions and provide you with personalized therapy sessions. I can guide you through various therapy techniques, emotional support, and mental well-being practices. What’s your name?" }
+    { role: 'assistant', content: "Hi, I'm **Clamia**. I'm your AI therapist, trained to understand your emotions and provide personalized therapy sessions." },
+    { role: 'assistant', content: "I can guide you through various therapy techniques, emotional support, and mental well-being practices." },
+    { role: 'assistant', content: "What’s your name?" }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
