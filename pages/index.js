@@ -1,15 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Home() {
   const [messages, setMessages] = useState([
-    {
-      role: 'assistant',
-      content: `<span style="font-weight: bold; color: #007bff;">Hi, I'm Clamia.</span> <br/><br/>I’m your AI therapist, trained to understand your emotions and provide personalized therapy sessions. <br/><br/>I can guide you through various therapy techniques, emotional support, and mental well-being practices. <br/><br/>Let’s begin with your introduction. What’s your name?`
-    }
+    { role: 'assistant', content: "Hi, I'm Clamia. I'm your AI therapist, trained to understand your emotions and provide personalized therapy sessions." }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [listening, setListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
 
   const sendMessage = async (userInput = null) => {
@@ -32,11 +28,25 @@ export default function Home() {
       const data = await res.json();
       const newMessages = [...updatedMessages, data.reply];
       setMessages(newMessages);
+      simulateTyping(data.reply.content);  // Call the typing effect function here
     } catch (error) {
       console.error("Error:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const simulateTyping = (message) => {
+    let index = 0;
+    const typingInterval = setInterval(() => {
+      setMessages(prevMessages => {
+        const lastMessage = prevMessages[prevMessages.length - 1];
+        lastMessage.content = message.slice(0, index + 1);
+        return [...prevMessages];
+      });
+      index++;
+      if (index === message.length) clearInterval(typingInterval);
+    }, 100);  // Adjust typing speed here
   };
 
   return (
@@ -52,10 +62,10 @@ export default function Home() {
       justifyContent: 'flex-start',
       alignItems: 'center',
     }}>
-
-      {/* Logo Section */}
-      <div style={{ textAlign: 'center', marginBottom: 10 }}>
-        <img src="/clamia-logo-chat.png" alt="Clamia Logo" style={{ height: 40 }} />
+      
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
+        <img src="/clamia-logo.png" alt="Clamia Logo" style={{ height: 40, marginRight: 10 }} />
+        <h2 style={{ fontSize: '1.5em', color: '#333' }}>Clamia</h2>
       </div>
 
       <div style={{
@@ -85,25 +95,14 @@ export default function Home() {
             <span dangerouslySetInnerHTML={{ __html: msg.content }} />
           </div>
         ))}
-        {isSpeaking && (
-          <div style={{
-            textAlign: 'left',
-            color: '#666',
-            fontSize: 13,
-            marginTop: 5,
-          }}>
-            🔊 Clamia is speaking...
-          </div>
-        )}
       </div>
 
-      {/* Input Section */}
       <div style={{ display: 'flex', gap: 10, width: '100%' }}>
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-          placeholder="Type or use mic..."
+          placeholder="Type your message..."
           style={{
             flex: 1,
             padding: '10px',
@@ -119,14 +118,6 @@ export default function Home() {
           color: 'white',
         }}>
           {loading ? '...' : 'Send'}
-        </button>
-        <button onClick={() => sendMessage()} style={{
-          padding: '10px 12px',
-          borderRadius: '8px',
-          border: '1px solid #ccc',
-          background: '#fff',
-        }}>
-          🎤
         </button>
       </div>
     </main>
