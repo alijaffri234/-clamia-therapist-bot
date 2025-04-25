@@ -1,23 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export default function Home() {
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: "Hi, I'm Clamia. I'm your AI therapist, trained to understand your emotions and provide personalized therapy sessions.\nI can guide you through various therapy techniques, emotional support, and mental well-being practices.\nWhat’s your name?" }
+    { role: 'assistant', content: "Hi, I’m Clamia. What’s your name?" }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-
-  useEffect(() => {
-    // Speak the intro message on page load
-    speakIntroMessages();
-  }, []);
-
-  const speakIntroMessages = async () => {
-    const text = messages[0].content;
-    await speakText(text);  // Speak the combined introduction text
-  };
 
   const sendMessage = async (userInput = null) => {
     const messageToSend = userInput || input;
@@ -39,7 +29,7 @@ export default function Home() {
       const data = await res.json();
       const newMessages = [...updatedMessages, data.reply];
       setMessages(newMessages);
-      speakText(data.reply.content); // Speak the assistant's reply
+      speakText(data.reply.content);
     } catch (error) {
       console.error("Error:", error);
     } finally {
@@ -59,27 +49,21 @@ export default function Home() {
 
     recognition.onresult = (event) => {
       const speech = event.results[0][0].transcript;
-      sendMessage(speech); // Send the speech input as a message
+      sendMessage(speech);
     };
 
     recognition.start();
   };
 
   const speakText = (text) => {
-    const cleanedText = cleanTextForSpeech(text);
-    const utterance = new SpeechSynthesisUtterance(cleanedText);
+    const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'en-US';
     utterance.pitch = 1;
     utterance.rate = 1;
 
     setIsSpeaking(true);
     utterance.onend = () => setIsSpeaking(false);
-    speechSynthesis.speak(utterance); // Speak the text using browser's speech synthesis
-  };
-
-  const cleanTextForSpeech = (text) => {
-    // Remove HTML tags (like bold tags) to prevent them from being read out
-    return text.replace(/<\/?[^>]+(>|$)/g, "");
+    speechSynthesis.speak(utterance);
   };
 
   return (
@@ -89,9 +73,14 @@ export default function Home() {
       margin: 'auto',
       fontFamily: 'Arial, sans-serif',
       background: '#f8f9fa',
-      minHeight: '100vh'
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'flex-start',
+      alignItems: 'center',
     }}>
 
+      {/* Logo Section */}
       <div style={{ textAlign: 'center', marginBottom: 10 }}>
         <img src="/clamia-logo.png" alt="Clamia Logo" style={{ height: 40 }} />
       </div>
@@ -102,7 +91,11 @@ export default function Home() {
         padding: 20,
         boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
         marginBottom: 20,
-        minHeight: 300
+        minHeight: 300,
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start'
       }}>
         {messages.map((msg, i) => (
           <div key={i} style={{
@@ -111,20 +104,28 @@ export default function Home() {
             margin: '10px 0',
             borderRadius: 8,
             maxWidth: '80%',
-            display: 'inline-block',
-            textAlign: msg.role === 'assistant' ? 'left' : 'right'
+            display: 'block',
+            textAlign: msg.role === 'assistant' ? 'left' : 'right',
+            marginLeft: msg.role === 'assistant' ? '10px' : 'auto',
+            marginRight: msg.role === 'user' ? '10px' : 'auto',
           }}>
             <span dangerouslySetInnerHTML={{ __html: msg.content }} />
           </div>
         ))}
         {isSpeaking && (
-          <div style={{ color: '#666', fontSize: 13, marginTop: 5 }}>
+          <div style={{
+            textAlign: 'left',
+            color: '#666',
+            fontSize: 13,
+            marginTop: 5,
+          }}>
             🔊 Clamia is speaking...
           </div>
         )}
       </div>
 
-      <div style={{ display: 'flex', gap: 10 }}>
+      {/* Input Section */}
+      <div style={{ display: 'flex', gap: 10, width: '100%' }}>
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -134,7 +135,7 @@ export default function Home() {
             flex: 1,
             padding: '10px',
             borderRadius: '8px',
-            border: '1px solid #ccc'
+            border: '1px solid #ccc',
           }}
         />
         <button onClick={() => sendMessage()} disabled={loading} style={{
@@ -142,7 +143,7 @@ export default function Home() {
           borderRadius: '8px',
           border: 'none',
           background: '#007bff',
-          color: 'white'
+          color: 'white',
         }}>
           {loading ? '...' : 'Send'}
         </button>
@@ -150,11 +151,12 @@ export default function Home() {
           padding: '10px 12px',
           borderRadius: '8px',
           border: '1px solid #ccc',
-          background: '#fff'
+          background: '#fff',
         }}>
           🎤
         </button>
       </div>
+
       {listening && <p style={{ fontSize: 12, color: '#888', marginTop: 8 }}>🎙️ Listening…</p>}
     </main>
   );
