@@ -4,7 +4,7 @@ export default function Home() {
   const [messages, setMessages] = useState([
     { 
       role: 'assistant', 
-      content: "Hi, I'm <span style="color: #3366ff;"><strong>Clamia</strong></span>. I'm your AI therapist, trained to understand your emotions and provide personalized therapy sessions. <br/><br/>What can i help you with today?"
+      content: "Hi, I'm <span style='color: #3366ff; font-weight: bold;'>Clamia</span>. I'm your AI therapist, trained to understand your emotions and provide personalized therapy sessions. <br/><br/>What can I help you with today?"
     }
   ]);
   const [input, setInput] = useState('');
