@@ -17,6 +17,7 @@ export default function Home() {
   }, []);
 
   const speakIntroMessages = async () => {
+    // Sequentially speak all three intro messages
     for (let i = 0; i < 3; i++) {
       await speakText(messages[i].content);
     }
