@@ -12,8 +12,9 @@ export default function Home() {
   const [isSpeaking, setIsSpeaking] = useState(false);
 
   useEffect(() => {
-    speakText(messages[0].content); // Speak the first message when the page loads
-  }, []);
+    // Speak the first message when the page loads
+    if (messages.length > 0) speakText(messages[0].content);
+  }, [messages]);
 
   const sendMessage = async (userInput = null) => {
     const messageToSend = userInput || input;
