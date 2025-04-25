@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export default function Home() {
   const [messages, setMessages] = useState([
@@ -9,25 +9,32 @@ export default function Home() {
   const [listening, setListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
 
-  const sendMessage = async () => {
-    if (!input.trim()) return;
-    const userMessage = { role: 'user', content: input };
+  const sendMessage = async (userInput = null) => {
+    const messageToSend = userInput || input;
+    if (!messageToSend.trim()) return;
+
+    const userMessage = { role: 'user', content: messageToSend };
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
-    setInput('');
+    if (!userInput) setInput('');
     setLoading(true);
 
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: updatedMessages })
-    });
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: updatedMessages })
+      });
 
-    const data = await res.json();
-    const newMessages = [...updatedMessages, data.reply];
-    setMessages(newMessages);
-    setLoading(false);
-    speakText(data.reply.content);
+      const data = await res.json();
+      const newMessages = [...updatedMessages, data.reply];
+      setMessages(newMessages);
+      speakText(data.reply.content);
+    } catch (error) {
+      console.error("Error sending message:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleVoiceInput = () => {
@@ -35,13 +42,15 @@ export default function Home() {
     const recognition = new SpeechRecognition();
     recognition.lang = 'en-US';
     recognition.interimResults = false;
+
     recognition.onstart = () => setListening(true);
     recognition.onerror = () => setListening(false);
     recognition.onend = () => setListening(false);
 
     recognition.onresult = (event) => {
       const speech = event.results[0][0].transcript;
-      setInput(speech);
+      setInput(speech); // still shows it for reference
+      sendMessage(speech); // ✅ auto-send the message
     };
 
     recognition.start();
@@ -115,7 +124,7 @@ export default function Home() {
             border: '1px solid #ccc'
           }}
         />
-        <button onClick={sendMessage} disabled={loading} style={{
+        <button onClick={() => sendMessage()} disabled={loading} style={{
           padding: '10px 16px',
           borderRadius: '8px',
           border: 'none',
