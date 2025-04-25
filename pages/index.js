@@ -6,6 +6,8 @@ export default function Home() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [listening, setListening] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   const sendMessage = async (userInput = null) => {
     const messageToSend = userInput || input;
@@ -34,6 +36,35 @@ export default function Home() {
     }
   };
 
+  const handleVoiceInput = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+
+    recognition.onstart = () => setListening(true);
+    recognition.onerror = () => setListening(false);
+    recognition.onend = () => setListening(false);
+
+    recognition.onresult = (event) => {
+      const speech = event.results[0][0].transcript;
+      sendMessage(speech);
+    };
+
+    recognition.start();
+  };
+
+  const speakText = (text) => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-US';
+    utterance.pitch = 1;
+    utterance.rate = 1;
+
+    setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    speechSynthesis.speak(utterance);
+  };
+
   return (
     <main style={{
       padding: 20,
@@ -50,10 +81,9 @@ export default function Home() {
 
       {/* Logo Section */}
       <div style={{ textAlign: 'center', marginBottom: 10 }}>
-        <img src="/clamia-logo.png" alt="Clamia Logo" style={{ height: 40 }} />
+        <img src="/clamia-logo-chat.png" alt="Clamia Logo" style={{ height: 40 }} />
       </div>
 
-      {/* Messages Display */}
       <div style={{
         background: '#fff',
         borderRadius: '10px',
@@ -77,10 +107,23 @@ export default function Home() {
             textAlign: msg.role === 'assistant' ? 'left' : 'right',
             marginLeft: msg.role === 'assistant' ? '10px' : 'auto',
             marginRight: msg.role === 'user' ? '10px' : 'auto',
+            flexDirection: 'row',
+            alignItems: 'center',
           }}>
-            {msg.content}
+            {msg.role === 'assistant' && <img src="/clamia-logo-chat.png" alt="Clamia Logo" style={{ height: 20, marginRight: 10 }} />}
+            <span dangerouslySetInnerHTML={{ __html: msg.content }} />
           </div>
         ))}
+        {isSpeaking && (
+          <div style={{
+            textAlign: 'left',
+            color: '#666',
+            fontSize: 13,
+            marginTop: 5,
+          }}>
+            🔊 Clamia is speaking...
+          </div>
+        )}
       </div>
 
       {/* Input Section */}
@@ -89,7 +132,7 @@ export default function Home() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-          placeholder="Type your message..."
+          placeholder="Type or use mic..."
           style={{
             flex: 1,
             padding: '10px',
@@ -106,7 +149,17 @@ export default function Home() {
         }}>
           {loading ? '...' : 'Send'}
         </button>
+        <button onClick={handleVoiceInput} style={{
+          padding: '10px 12px',
+          borderRadius: '8px',
+          border: '1px solid #ccc',
+          background: '#fff',
+        }}>
+          🎤
+        </button>
       </div>
+
+      {listening && <p style={{ fontSize: 12, color: '#888', marginTop: 8 }}>🎙️ Listening…</p>}
     </main>
   );
 }
