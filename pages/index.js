@@ -2,13 +2,15 @@ import { useState } from 'react';
 
 export default function Home() {
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: "Hi, I’m Clamia. What’s your name?" }
+    {
+      role: 'assistant',
+      content: `**Hi, I'm Clamia.** \n\nI’m your AI therapist, trained to understand your emotions and provide personalized therapy sessions. \n\nI can guide you through various therapy techniques, emotional support, and mental well-being practices. \n\nLet’s begin with your introduction. What’s your name?`
+    }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isRecording, setIsRecording] = useState(false); // For the mic stop button
 
   const sendMessage = async (userInput = null) => {
     const messageToSend = userInput || input;
@@ -35,47 +37,6 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleVoiceInput = () => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'en-US';
-    recognition.interimResults = false;
-
-    recognition.onstart = () => {
-      setListening(true);
-      setIsRecording(true);
-    };
-    recognition.onerror = () => setListening(false);
-    recognition.onend = () => {
-      setListening(false);
-      setIsRecording(false);
-    };
-
-    recognition.onresult = (event) => {
-      const speech = event.results[0][0].transcript;
-      sendMessage(speech);
-    };
-
-    recognition.start();
-  };
-
-  const stopVoiceRecording = () => {
-    speechSynthesis.cancel(); // Stops any ongoing speech synthesis
-    setIsRecording(false);
-    setListening(false); // Stops voice input recording
-  };
-
-  const speakText = (text) => {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
-    utterance.pitch = 1;
-    utterance.rate = 1;
-
-    setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    speechSynthesis.speak(utterance);
   };
 
   return (
@@ -163,7 +124,7 @@ export default function Home() {
         }}>
           {loading ? '...' : 'Send'}
         </button>
-        <button onClick={handleVoiceInput} style={{
+        <button onClick={() => sendMessage()} style={{
           padding: '10px 12px',
           borderRadius: '8px',
           border: '1px solid #ccc',
@@ -171,20 +132,7 @@ export default function Home() {
         }}>
           🎤
         </button>
-        {isRecording && (
-          <button onClick={stopVoiceRecording} style={{
-            padding: '10px 12px',
-            borderRadius: '8px',
-            border: '1px solid #ccc',
-            background: '#ff4136',
-            color: 'white',
-          }}>
-            Stop
-          </button>
-        )}
       </div>
-
-      {listening && <p style={{ fontSize: 12, color: '#888', marginTop: 8 }}>🎙️ Listening…</p>}
     </main>
   );
 }
