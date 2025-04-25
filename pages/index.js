@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 export default function Home() {
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: "Hi, I'm <strong style='color: #007bff;'>Clamia</strong>. I'm your AI therapist, trained to understand your emotions and provide personalized therapy sessions." },
+    { role: 'assistant', content: "Hi, I'm Clamia. I'm your AI therapist, trained to understand your emotions and provide personalized therapy sessions." },
     { role: 'assistant', content: "I can guide you through various therapy techniques, emotional support, and mental well-being practices." },
     { role: 'assistant', content: "What’s your name?" }
   ]);
@@ -10,11 +10,6 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-
-  useEffect(() => {
-    // Speak the first message when the page loads
-    if (messages.length > 0) speakText(messages[0].content);
-  }, [messages]);
 
   const sendMessage = async (userInput = null) => {
     const messageToSend = userInput || input;
@@ -63,7 +58,8 @@ export default function Home() {
   };
 
   const speakText = (text) => {
-    const utterance = new SpeechSynthesisUtterance(text);
+    const cleanedText = cleanTextForSpeech(text);
+    const utterance = new SpeechSynthesisUtterance(cleanedText);
     utterance.lang = 'en-US';
     utterance.pitch = 1;
     utterance.rate = 1;
@@ -71,6 +67,11 @@ export default function Home() {
     setIsSpeaking(true);
     utterance.onend = () => setIsSpeaking(false);
     speechSynthesis.speak(utterance); // Speak the text using browser's speech synthesis
+  };
+
+  const cleanTextForSpeech = (text) => {
+    // Remove HTML tags (like bold formatting) to prevent them from being read out
+    return text.replace(/<\/?[^>]+(>|$)/g, "");
   };
 
   return (
