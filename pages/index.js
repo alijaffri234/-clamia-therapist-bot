@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export default function Home() {
   const [messages, setMessages] = useState([
@@ -8,21 +8,6 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isRecording, setIsRecording] = useState(false); // track if mic is recording
-  const [recordingTime, setRecordingTime] = useState(0); // track recording time
-  const [micButtonColor, setMicButtonColor] = useState('#ccc'); // mic button color change
-
-  useEffect(() => {
-    let timer;
-    if (isRecording) {
-      timer = setInterval(() => {
-        setRecordingTime((prev) => prev + 1);
-      }, 1000);
-    } else {
-      setRecordingTime(0);
-    }
-    return () => clearInterval(timer);
-  }, [isRecording]);
 
   const sendMessage = async (userInput = null) => {
     const messageToSend = userInput || input;
@@ -57,21 +42,10 @@ export default function Home() {
     const recognition = new SpeechRecognition();
     recognition.lang = 'en-US';
     recognition.interimResults = false;
-    recognition.onstart = () => {
-      setListening(true);
-      setIsRecording(true);
-      setMicButtonColor('red'); // change mic button color to red
-    };
-    recognition.onerror = () => {
-      setListening(false);
-      setIsRecording(false);
-      setMicButtonColor('#ccc'); // reset mic button color to default
-    };
-    recognition.onend = () => {
-      setListening(false);
-      setIsRecording(false);
-      setMicButtonColor('#ccc'); // reset mic button color to default
-    };
+
+    recognition.onstart = () => setListening(true);
+    recognition.onerror = () => setListening(false);
+    recognition.onend = () => setListening(false);
 
     recognition.onresult = (event) => {
       const speech = event.results[0][0].transcript;
@@ -79,11 +53,6 @@ export default function Home() {
     };
 
     recognition.start();
-  };
-
-  const stopRecording = () => {
-    setIsRecording(false); // Stop recording manually
-    setMicButtonColor('#ccc'); // Reset mic button color
   };
 
   const speakText = (text) => {
@@ -104,10 +73,14 @@ export default function Home() {
       margin: 'auto',
       fontFamily: 'Arial, sans-serif',
       background: '#f8f9fa',
-      minHeight: '100vh'
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'flex-start',
+      alignItems: 'center',
     }}>
 
-      {/* 👇 Replace this with your logo image */}
+      {/* Logo Section */}
       <div style={{ textAlign: 'center', marginBottom: 10 }}>
         <img src="/clamia-logo.png" alt="Clamia Logo" style={{ height: 40 }} />
       </div>
@@ -118,7 +91,11 @@ export default function Home() {
         padding: 20,
         boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
         marginBottom: 20,
-        minHeight: 300
+        minHeight: 300,
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start'
       }}>
         {messages.map((msg, i) => (
           <div key={i} style={{
@@ -136,13 +113,19 @@ export default function Home() {
           </div>
         ))}
         {isSpeaking && (
-          <div style={{ color: '#666', fontSize: 13, marginTop: 5 }}>
+          <div style={{
+            textAlign: 'left',
+            color: '#666',
+            fontSize: 13,
+            marginTop: 5,
+          }}>
             🔊 Clamia is speaking...
           </div>
         )}
       </div>
 
-      <div style={{ display: 'flex', gap: 10 }}>
+      {/* Input Section */}
+      <div style={{ display: 'flex', gap: 10, width: '100%' }}>
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -152,7 +135,7 @@ export default function Home() {
             flex: 1,
             padding: '10px',
             borderRadius: '8px',
-            border: '1px solid #ccc'
+            border: '1px solid #ccc',
           }}
         />
         <button onClick={() => sendMessage()} disabled={loading} style={{
@@ -160,7 +143,7 @@ export default function Home() {
           borderRadius: '8px',
           border: 'none',
           background: '#007bff',
-          color: 'white'
+          color: 'white',
         }}>
           {loading ? '...' : 'Send'}
         </button>
@@ -168,22 +151,13 @@ export default function Home() {
           padding: '10px 12px',
           borderRadius: '8px',
           border: '1px solid #ccc',
-          background: micButtonColor
+          background: '#fff',
         }}>
           🎤
-        </button>
-        <button onClick={stopRecording} style={{
-          padding: '10px 12px',
-          borderRadius: '8px',
-          border: '1px solid #ccc',
-          background: '#ff4747'
-        }}>
-          Stop
         </button>
       </div>
 
       {listening && <p style={{ fontSize: 12, color: '#888', marginTop: 8 }}>🎙️ Listening…</p>}
-      {isRecording && <p style={{ fontSize: 12, color: '#888', marginTop: 8 }}>⏱️ Recording... {recordingTime}s</p>}
     </main>
   );
 }
