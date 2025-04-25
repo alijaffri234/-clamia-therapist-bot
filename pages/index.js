@@ -1,13 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Home() {
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: "Hi, I’m Clamia. What’s your name?" }
+    { role: 'assistant', content: "Hi, I'm Clamia. I'm your AI therapist, trained to understand your emotions and provide you with personalized therapy sessions. I can guide you through various therapy techniques, emotional support, and mental well-being practices. What’s your name?" }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+
+  useEffect(() => {
+    speakText(messages[0].content); // Speak the first message when the page loads
+  }, []);
 
   const sendMessage = async (userInput = null) => {
     const messageToSend = userInput || input;
@@ -29,7 +33,7 @@ export default function Home() {
       const data = await res.json();
       const newMessages = [...updatedMessages, data.reply];
       setMessages(newMessages);
-      speakText(data.reply.content);
+      speakText(data.reply.content); // Speak the assistant's reply
     } catch (error) {
       console.error("Error:", error);
     } finally {
@@ -49,7 +53,7 @@ export default function Home() {
 
     recognition.onresult = (event) => {
       const speech = event.results[0][0].transcript;
-      sendMessage(speech);
+      sendMessage(speech); // Send the speech input as a message
     };
 
     recognition.start();
@@ -63,7 +67,7 @@ export default function Home() {
 
     setIsSpeaking(true);
     utterance.onend = () => setIsSpeaking(false);
-    speechSynthesis.speak(utterance);
+    speechSynthesis.speak(utterance); // Speak the text using browser's speech synthesis
   };
 
   return (
@@ -76,7 +80,6 @@ export default function Home() {
       minHeight: '100vh'
     }}>
 
-      {/* 👇 Replace this with your logo image */}
       <div style={{ textAlign: 'center', marginBottom: 10 }}>
         <img src="/clamia-logo.png" alt="Clamia Logo" style={{ height: 40 }} />
       </div>
@@ -91,20 +94,15 @@ export default function Home() {
       }}>
         {messages.map((msg, i) => (
           <div key={i} style={{
-            display: 'flex',
-            justifyContent: msg.role === 'assistant' ? 'flex-start' : 'flex-end'
+            background: msg.role === 'assistant' ? '#e9ecef' : '#cce5ff',
+            padding: 12,
+            margin: '10px 0',
+            borderRadius: 8,
+            maxWidth: '80%',
+            display: 'inline-block',
+            textAlign: 'left'
           }}>
-            <div style={{
-              background: msg.role === 'assistant' ? '#e9ecef' : '#cce5ff',
-              padding: 12,
-              margin: '10px 0',
-              borderRadius: 8,
-              maxWidth: '80%',
-              display: 'inline-block',
-              textAlign: 'left'
-            }}>
-              {msg.content}
-            </div>
+            {msg.content}
           </div>
         ))}
         {isSpeaking && (
