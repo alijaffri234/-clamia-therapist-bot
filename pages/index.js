@@ -4,7 +4,7 @@ export default function Home() {
   const [messages, setMessages] = useState([
     { 
       role: 'assistant', 
-      content: "Hi, I'm <span style='color: #3366ff; font-weight: bold;'>Clamia</span>. I'm your AI therapist, trained to understand your emotions and provide personalized therapy sessions. <br/><br/>What can I help you with today?"
+      content: "Hi, I'm <span style='color: #3366ff; font-weight: bold;'>Clamia</span>. I'm your AI therapist, trained to understand your emotions and provide personalized therapy sessions. <br/><br/>What can I help you with today?" 
     }
   ]);
   const [input, setInput] = useState('');
@@ -66,9 +66,9 @@ export default function Home() {
       alignItems: 'center',
     }}>
       
-      {/* 👇 Updated to display the logo beside the assistant message */}
+      {/* 👇 Updated to display the header logo */}
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
-        <img src="/clamia-logo-chat.png" alt="Clamia Logo" style={{ height: 40, marginRight: 10 }} />
+        <img src="/clamia-logo.png" alt="Clamia Logo" style={{ height: 40, marginRight: 10 }} />
       </div>
 
       <div style={{
@@ -91,7 +91,10 @@ export default function Home() {
             textAlign: msg.role === 'assistant' ? 'left' : 'right',
             marginLeft: msg.role === 'assistant' ? '10px' : 'auto',
             marginRight: msg.role === 'user' ? '10px' : 'auto',
+            backgroundColor: msg.role === 'assistant' ? '#e9ecef' : '#cce5ff', // Adjust color here
           }}>
+            {/* Logo added beside the assistant's message */}
+            {msg.role === 'assistant' && <img src="/clamia-logo-chat.png" alt="Clamia Logo" style={{ height: 20, marginRight: 10, verticalAlign: 'middle' }} />}
             <span dangerouslySetInnerHTML={{ __html: msg.content }} />
           </div>
         ))}
