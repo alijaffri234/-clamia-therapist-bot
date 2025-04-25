@@ -8,6 +8,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isRecording, setIsRecording] = useState(false); // For the mic stop button
 
   const sendMessage = async (userInput = null) => {
     const messageToSend = userInput || input;
@@ -42,9 +43,15 @@ export default function Home() {
     recognition.lang = 'en-US';
     recognition.interimResults = false;
 
-    recognition.onstart = () => setListening(true);
+    recognition.onstart = () => {
+      setListening(true);
+      setIsRecording(true);
+    };
     recognition.onerror = () => setListening(false);
-    recognition.onend = () => setListening(false);
+    recognition.onend = () => {
+      setListening(false);
+      setIsRecording(false);
+    };
 
     recognition.onresult = (event) => {
       const speech = event.results[0][0].transcript;
@@ -52,6 +59,12 @@ export default function Home() {
     };
 
     recognition.start();
+  };
+
+  const stopVoiceRecording = () => {
+    speechSynthesis.cancel(); // Stops any ongoing speech synthesis
+    setIsRecording(false);
+    setListening(false); // Stops voice input recording
   };
 
   const speakText = (text) => {
@@ -109,6 +122,7 @@ export default function Home() {
             marginRight: msg.role === 'user' ? '10px' : 'auto',
             flexDirection: 'row',
             alignItems: 'center',
+            display: 'flex', // Make it a flex container to align the logo and text
           }}>
             {msg.role === 'assistant' && <img src="/clamia-logo-chat.png" alt="Clamia Logo" style={{ height: 20, marginRight: 10 }} />}
             <span dangerouslySetInnerHTML={{ __html: msg.content }} />
@@ -157,6 +171,17 @@ export default function Home() {
         }}>
           🎤
         </button>
+        {isRecording && (
+          <button onClick={stopVoiceRecording} style={{
+            padding: '10px 12px',
+            borderRadius: '8px',
+            border: '1px solid #ccc',
+            background: '#ff4136',
+            color: 'white',
+          }}>
+            Stop
+          </button>
+        )}
       </div>
 
       {listening && <p style={{ fontSize: 12, color: '#888', marginTop: 8 }}>🎙️ Listening…</p>}
