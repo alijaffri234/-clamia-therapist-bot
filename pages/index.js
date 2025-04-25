@@ -127,10 +127,12 @@ export default function Home() {
             margin: '10px 0',
             borderRadius: 8,
             maxWidth: '80%',
-            display: 'inline-block',
-            textAlign: msg.role === 'assistant' ? 'left' : 'right'
+            display: 'block',
+            textAlign: msg.role === 'assistant' ? 'left' : 'right',
+            marginLeft: msg.role === 'assistant' ? '10px' : 'auto',
+            marginRight: msg.role === 'user' ? '10px' : 'auto',
           }}>
-            {msg.content}
+            <span dangerouslySetInnerHTML={{ __html: msg.content }} />
           </div>
         ))}
         {isSpeaking && (
