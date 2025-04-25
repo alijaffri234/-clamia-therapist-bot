@@ -2,7 +2,10 @@ import { useState, useEffect } from 'react';
 
 export default function Home() {
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: `Hi, I'm <span style="color: #3366ff;"><strong>Clamia</strong></span>. I'm your AI therapist, trained to understand your emotions and provide personalized therapy sessions. <br/><br/>What can I help you with today?` }
+    { 
+      role: 'assistant', 
+      content: "Hi, I'm <span style="color: #3366ff;"><strong>Clamia</strong></span>. I'm your AI therapist, trained to understand your emotions and provide personalized therapy sessions. <br/><br/>What can i help you with today?"
+    }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -46,7 +49,7 @@ export default function Home() {
       });
       index++;
       if (index === message.length) clearInterval(typingInterval);
-    }, 40);  // Adjusted typing speed to 40
+    }, 30);  // Adjusted speed to 30 for a faster typing effect
   };
 
   return (
@@ -62,15 +65,15 @@ export default function Home() {
       justifyContent: 'flex-start',
       alignItems: 'center',
     }}>
+      
+      {/* 👇 Updated to display the logo beside the assistant message */}
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
-        <img src="/clamia-logo.png" alt="Clamia Logo" style={{ height: 40, marginRight: 10 }} />
+        <img src="/clamia-logo-chat.png" alt="Clamia Logo" style={{ height: 40, marginRight: 10 }} />
       </div>
 
       <div style={{
-        background: '#fff',
-        borderRadius: '10px',
+        background: 'none',  // Removed background color from the bubbles
         padding: 20,
-        boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
         marginBottom: 20,
         minHeight: 300,
         width: '100%',
@@ -80,33 +83,21 @@ export default function Home() {
       }}>
         {messages.map((msg, i) => (
           <div key={i} style={{
-            display: 'flex',
-            alignItems: 'flex-start',
-            margin: '10px 0',
-            background: msg.role === 'assistant' ? '#e9ecef' : '#cce5ff',
             padding: 12,
+            margin: '10px 0',
             borderRadius: 8,
             maxWidth: '80%',
+            display: 'inline-block',
+            textAlign: msg.role === 'assistant' ? 'left' : 'right',
             marginLeft: msg.role === 'assistant' ? '10px' : 'auto',
             marginRight: msg.role === 'user' ? '10px' : 'auto',
           }}>
-            {msg.role === 'assistant' && (
-              <img src="/clamia-logo.png" alt="Clamia Logo" style={{ height: 30, marginRight: 10 }} />
-            )}
-            <div style={{
-              background: '#fff',
-              padding: '12px',
-              borderRadius: '8px',
-              maxWidth: '80%',
-              display: 'block',
-              wordWrap: 'break-word',
-            }}>
-              <span dangerouslySetInnerHTML={{ __html: msg.content }} />
-            </div>
+            <span dangerouslySetInnerHTML={{ __html: msg.content }} />
           </div>
         ))}
       </div>
 
+      {/* Input Section */}
       <div style={{ display: 'flex', gap: 10, width: '100%' }}>
         <input
           value={input}
