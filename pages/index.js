@@ -31,7 +31,7 @@ export default function Home() {
       setMessages(newMessages);
       speakText(data.reply.content);
     } catch (error) {
-      console.error("Error sending message:", error);
+      console.error("Error:", error);
     } finally {
       setLoading(false);
     }
@@ -49,8 +49,7 @@ export default function Home() {
 
     recognition.onresult = (event) => {
       const speech = event.results[0][0].transcript;
-      setInput(speech); // still shows it for reference
-      sendMessage(speech); // ✅ auto-send the message
+      sendMessage(speech);
     };
 
     recognition.start();
@@ -64,7 +63,6 @@ export default function Home() {
 
     setIsSpeaking(true);
     utterance.onend = () => setIsSpeaking(false);
-
     speechSynthesis.speak(utterance);
   };
 
@@ -77,35 +75,40 @@ export default function Home() {
       background: '#f8f9fa',
       minHeight: '100vh'
     }}>
-      <h1 style={{ textAlign: 'center' }}>🧠 <span style={{ color: '#333' }}>Clamia – AI Therapist</span></h1>
+
+      {/* 👇 Replace this with your logo image */}
+      <div style={{ textAlign: 'center', marginBottom: 10 }}>
+        <img src="/clamia-logo.png" alt="Clamia Logo" style={{ height: 40 }} />
+      </div>
 
       <div style={{
         background: '#fff',
         borderRadius: '10px',
         padding: 20,
         boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
-        marginTop: 20,
         marginBottom: 20,
         minHeight: 300
       }}>
         {messages.map((msg, i) => (
           <div key={i} style={{
-            background: msg.role === 'assistant' ? '#e9ecef' : '#cce5ff',
-            padding: 12,
-            margin: '10px 0',
-            borderRadius: 8,
-            textAlign: msg.role === 'assistant' ? 'left' : 'right'
+            display: 'flex',
+            justifyContent: msg.role === 'assistant' ? 'flex-start' : 'flex-end'
           }}>
-            {msg.content}
+            <div style={{
+              background: msg.role === 'assistant' ? '#e9ecef' : '#cce5ff',
+              padding: 12,
+              margin: '10px 0',
+              borderRadius: 8,
+              maxWidth: '80%',
+              display: 'inline-block',
+              textAlign: 'left'
+            }}>
+              {msg.content}
+            </div>
           </div>
         ))}
         {isSpeaking && (
-          <div style={{
-            textAlign: 'left',
-            color: '#666',
-            fontSize: 13,
-            marginTop: 5
-          }}>
+          <div style={{ color: '#666', fontSize: 13, marginTop: 5 }}>
             🔊 Clamia is speaking...
           </div>
         )}
