@@ -4,7 +4,7 @@ export default function Home() {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: `**Hi, I'm Clamia.** \n\nI’m your AI therapist, trained to understand your emotions and provide personalized therapy sessions. \n\nI can guide you through various therapy techniques, emotional support, and mental well-being practices. \n\nLet’s begin with your introduction. What’s your name?`
+      content: `<span style="font-weight: bold; color: #007bff;">Hi, I'm Clamia.</span> <br/><br/>I’m your AI therapist, trained to understand your emotions and provide personalized therapy sessions. <br/><br/>I can guide you through various therapy techniques, emotional support, and mental well-being practices. <br/><br/>Let’s begin with your introduction. What’s your name?`
     }
   ]);
   const [input, setInput] = useState('');
@@ -81,11 +81,7 @@ export default function Home() {
             textAlign: msg.role === 'assistant' ? 'left' : 'right',
             marginLeft: msg.role === 'assistant' ? '10px' : 'auto',
             marginRight: msg.role === 'user' ? '10px' : 'auto',
-            flexDirection: 'row',
-            alignItems: 'center',
-            display: 'flex', // Make it a flex container to align the logo and text
           }}>
-            {msg.role === 'assistant' && <img src="/clamia-logo-chat.png" alt="Clamia Logo" style={{ height: 20, marginRight: 10 }} />}
             <span dangerouslySetInnerHTML={{ __html: msg.content }} />
           </div>
         ))}
