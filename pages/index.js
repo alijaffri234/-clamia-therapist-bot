@@ -24,6 +24,10 @@ export default function Home() {
 
     const data = await res.json();
     setMessages([...updatedMessages, data.reply]);
+
+    // 🔊 Clamia speaks the reply aloud
+    speakText(data.reply.content);
+
     setLoading(false);
   };
 
@@ -42,6 +46,15 @@ export default function Home() {
     };
 
     recognition.start();
+  };
+
+  // 🔊 Voice Output Function
+  const speakText = (text) => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-US';
+    utterance.pitch = 1;
+    utterance.rate = 1;
+    speechSynthesis.speak(utterance);
   };
 
   return (
