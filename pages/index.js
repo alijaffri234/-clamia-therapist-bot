@@ -11,6 +11,17 @@ export default function Home() {
   const [listening, setListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
 
+  useEffect(() => {
+    // Automatically speak the introduction messages when the page loads
+    speakIntroMessages();
+  }, []);
+
+  const speakIntroMessages = async () => {
+    for (let i = 0; i < 3; i++) {
+      await speakText(messages[i].content);
+    }
+  };
+
   const sendMessage = async (userInput = null) => {
     const messageToSend = userInput || input;
     if (!messageToSend.trim()) return;
@@ -70,7 +81,7 @@ export default function Home() {
   };
 
   const cleanTextForSpeech = (text) => {
-    // Remove HTML tags (like bold formatting) to prevent them from being read out
+    // Remove HTML tags (like bold tags) to prevent them from being read out
     return text.replace(/<\/?[^>]+(>|$)/g, "");
   };
 
