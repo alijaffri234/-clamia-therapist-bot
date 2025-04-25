@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 export default function Home() {
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: "Hi, I'm **Clamia**. I'm your AI therapist, trained to understand your emotions and provide personalized therapy sessions." },
+    { role: 'assistant', content: "Hi, I'm <strong style='color: #007bff;'>Clamia</strong>. I'm your AI therapist, trained to understand your emotions and provide personalized therapy sessions." },
     { role: 'assistant', content: "I can guide you through various therapy techniques, emotional support, and mental well-being practices." },
     { role: 'assistant', content: "What’s your name?" }
   ]);
@@ -102,9 +102,9 @@ export default function Home() {
             borderRadius: 8,
             maxWidth: '80%',
             display: 'inline-block',
-            textAlign: 'left'
+            textAlign: msg.role === 'assistant' ? 'left' : 'right'
           }}>
-            {msg.content}
+            <span dangerouslySetInnerHTML={{ __html: msg.content }} />
           </div>
         ))}
         {isSpeaking && (
