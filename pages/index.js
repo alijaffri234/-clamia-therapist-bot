@@ -2,9 +2,7 @@ import { useState, useEffect } from 'react';
 
 export default function Home() {
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: "Hi, I'm Clamia. I'm your AI therapist, trained to understand your emotions and provide personalized therapy sessions." },
-    { role: 'assistant', content: "I can guide you through various therapy techniques, emotional support, and mental well-being practices." },
-    { role: 'assistant', content: "What’s your name?" }
+    { role: 'assistant', content: "Hi, I'm Clamia. I'm your AI therapist, trained to understand your emotions and provide personalized therapy sessions.\nI can guide you through various therapy techniques, emotional support, and mental well-being practices.\nWhat’s your name?" }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -12,15 +10,13 @@ export default function Home() {
   const [isSpeaking, setIsSpeaking] = useState(false);
 
   useEffect(() => {
-    // Automatically speak the introduction messages when the page loads
+    // Speak the intro message on page load
     speakIntroMessages();
   }, []);
 
   const speakIntroMessages = async () => {
-    // Sequentially speak all three intro messages
-    for (let i = 0; i < 3; i++) {
-      await speakText(messages[i].content);
-    }
+    const text = messages[0].content;
+    await speakText(text);  // Speak the combined introduction text
   };
 
   const sendMessage = async (userInput = null) => {
