@@ -6,9 +6,6 @@ export default function Home() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [listening, setListening] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [mode, setMode] = useState('text'); // New state to manage modes
 
   const sendMessage = async (userInput = null) => {
     const messageToSend = userInput || input;
@@ -30,43 +27,11 @@ export default function Home() {
       const data = await res.json();
       const newMessages = [...updatedMessages, data.reply];
       setMessages(newMessages);
-      if (mode === 'voice') {
-        speakText(data.reply.content); // Only speak in voice mode
-      }
     } catch (error) {
       console.error("Error:", error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleVoiceInput = () => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'en-US';
-    recognition.interimResults = false;
-
-    recognition.onstart = () => setListening(true);
-    recognition.onerror = () => setListening(false);
-    recognition.onend = () => setListening(false);
-
-    recognition.onresult = (event) => {
-      const speech = event.results[0][0].transcript;
-      sendMessage(speech);
-    };
-
-    recognition.start();
-  };
-
-  const speakText = (text) => {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
-    utterance.pitch = 1;
-    utterance.rate = 1;
-
-    setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    speechSynthesis.speak(utterance);
   };
 
   return (
@@ -83,22 +48,12 @@ export default function Home() {
       alignItems: 'center',
     }}>
 
-      {/* Mode Selection */}
-      <div>
-        <button onClick={() => setMode('text')} style={{ margin: 5, padding: 10 }}>
-          Text Mode
-        </button>
-        <button onClick={() => setMode('voice')} style={{ margin: 5, padding: 10 }}>
-          Voice Mode
-        </button>
-      </div>
-
       {/* Logo Section */}
       <div style={{ textAlign: 'center', marginBottom: 10 }}>
         <img src="/clamia-logo.png" alt="Clamia Logo" style={{ height: 40 }} />
       </div>
 
-      {/* Message Display Section */}
+      {/* Messages Display */}
       <div style={{
         background: '#fff',
         borderRadius: '10px',
@@ -123,19 +78,9 @@ export default function Home() {
             marginLeft: msg.role === 'assistant' ? '10px' : 'auto',
             marginRight: msg.role === 'user' ? '10px' : 'auto',
           }}>
-            <span dangerouslySetInnerHTML={{ __html: msg.content }} />
+            {msg.content}
           </div>
         ))}
-        {isSpeaking && (
-          <div style={{
-            textAlign: 'left',
-            color: '#666',
-            fontSize: 13,
-            marginTop: 5,
-          }}>
-            🔊 Clamia is speaking...
-          </div>
-        )}
       </div>
 
       {/* Input Section */}
@@ -144,7 +89,7 @@ export default function Home() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-          placeholder="Type or use mic..."
+          placeholder="Type your message..."
           style={{
             flex: 1,
             padding: '10px',
@@ -161,20 +106,7 @@ export default function Home() {
         }}>
           {loading ? '...' : 'Send'}
         </button>
-
-        {/* Voice Input Button */}
-        {mode === 'voice' && (
-          <button onClick={handleVoiceInput} style={{
-            padding: '10px 12px',
-            borderRadius: '8px',
-            border: '1px solid #ccc',
-            background: '#fff',
-          }}>
-            🎤
-          </button>
-        )}
       </div>
-      {listening && <p style={{ fontSize: 12, color: '#888', marginTop: 8 }}>🎙️ Listening…</p>}
     </main>
   );
 }
