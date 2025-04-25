@@ -8,6 +8,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [mode, setMode] = useState('text'); // New state to manage modes
 
   const sendMessage = async (userInput = null) => {
     const messageToSend = userInput || input;
@@ -29,7 +30,9 @@ export default function Home() {
       const data = await res.json();
       const newMessages = [...updatedMessages, data.reply];
       setMessages(newMessages);
-      speakText(data.reply.content);
+      if (mode === 'voice') {
+        speakText(data.reply.content); // Only speak in voice mode
+      }
     } catch (error) {
       console.error("Error:", error);
     } finally {
@@ -80,11 +83,22 @@ export default function Home() {
       alignItems: 'center',
     }}>
 
+      {/* Mode Selection */}
+      <div>
+        <button onClick={() => setMode('text')} style={{ margin: 5, padding: 10 }}>
+          Text Mode
+        </button>
+        <button onClick={() => setMode('voice')} style={{ margin: 5, padding: 10 }}>
+          Voice Mode
+        </button>
+      </div>
+
       {/* Logo Section */}
       <div style={{ textAlign: 'center', marginBottom: 10 }}>
         <img src="/clamia-logo.png" alt="Clamia Logo" style={{ height: 40 }} />
       </div>
 
+      {/* Message Display Section */}
       <div style={{
         background: '#fff',
         borderRadius: '10px',
@@ -147,30 +161,18 @@ export default function Home() {
         }}>
           {loading ? '...' : 'Send'}
         </button>
-        <button 
-          onClick={handleVoiceInput} 
-          style={{
+
+        {/* Voice Input Button */}
+        {mode === 'voice' && (
+          <button onClick={handleVoiceInput} style={{
             padding: '10px 12px',
             borderRadius: '8px',
             border: '1px solid #ccc',
             background: '#fff',
-            display: listening ? 'none' : 'block',
-          }}
-        >
-          🎤
-        </button>
-        <button 
-          onClick={() => setListening(false)} 
-          style={{
-            padding: '10px 12px',
-            borderRadius: '8px',
-            border: '1px solid #ccc',
-            background: '#fff',
-            display: listening ? 'block' : 'none',
-          }}
-        >
-          Stop
-        </button>
+          }}>
+            🎤
+          </button>
+        )}
       </div>
       {listening && <p style={{ fontSize: 12, color: '#888', marginTop: 8 }}>🎙️ Listening…</p>}
     </main>
