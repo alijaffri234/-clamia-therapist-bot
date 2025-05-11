@@ -1,128 +1,161 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import ChatFunctionality from './ChatFunctionality';
+import ReactMarkdown from 'react-markdown';
+
+function formatTime(isoString) {
+  const date = new Date(isoString);
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
 
 export default function Home() {
-  const [messages, setMessages] = useState([
-    { 
-      role: 'assistant', 
-      content: "Hi, I'm <span style='color: #3366ff; font-weight: bold;'>Clamia</span>. I'm your AI therapist, trained to understand your emotions and provide personalized therapy sessions. <br/><br/>What can I help you with today?" 
-    }
-  ]);
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-
-  const sendMessage = async (userInput = null) => {
-    const messageToSend = userInput || input;
-    if (!messageToSend.trim()) return;
-
-    const userMessage = { role: 'user', content: messageToSend };
-    const updatedMessages = [...messages, userMessage];
-    setMessages(updatedMessages);
-    if (!userInput) setInput('');
-    setLoading(true);
-
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: updatedMessages })
-      });
-
-      const data = await res.json();
-      const newMessages = [...updatedMessages, data.reply];
-      setMessages(newMessages);
-      simulateTyping(data.reply.content);  // Call the typing effect function here
-    } catch (error) {
-      console.error("Error:", error);
-    } finally {
-      setLoading(false);
-    }
+  const defaultMessage = {
+    role: 'assistant',
+    content: "Hi, I'm **Clamia**. I'm your AI therapist, trained to understand your emotions and provide personalized therapy sessions.\n\nWhat can I help you with today?",
+    timestamp: new Date().toISOString()
   };
+  const [messages, setMessages] = useState([defaultMessage]);
+  const chatEndRef = useRef(null);
 
-  const simulateTyping = (message) => {
-    let index = 0;
-    const typingInterval = setInterval(() => {
-      setMessages(prevMessages => {
-        const lastMessage = prevMessages[prevMessages.length - 1];
-        lastMessage.content = message.slice(0, index + 1);
-        return [...prevMessages];
-      });
-      index++;
-      if (index === message.length) clearInterval(typingInterval);
-    }, 30);  // Adjusted speed to 30 for a faster typing effect
+  const handleNewMessage = useCallback(async (message) => {
+    const newMessage = { ...message, timestamp: new Date().toISOString() };
+    setMessages(prevMessages => [...prevMessages, newMessage]);
+    if (message.role === 'user') {
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: [...messages, newMessage] }),
+        });
+        const data = await response.json();
+        if (data.reply) {
+          setMessages(prevMessages => [...prevMessages, { ...data.reply, timestamp: new Date().toISOString() }]);
+        }
+      } catch {
+        setMessages(prevMessages => [...prevMessages, {
+          role: 'assistant',
+          content: 'I apologize, but I encountered an error. Please try again.',
+          timestamp: new Date().toISOString()
+        }]);
+      }
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+
+  // Theme colors (light mode for this UI)
+  const colors = {
+    background: '#f5f6fa',
+    chatBg: '#fff',
+    userBubble: '#19223a',
+    botBubble: '#f5f6fa',
+    text: '#232323',
+    userText: '#fff',
+    time: '#888'
   };
 
   return (
-    <main style={{
-      padding: 20,
-      maxWidth: 600,
-      margin: 'auto',
-      fontFamily: 'Arial, sans-serif',
-      background: '#f8f9fa',
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'flex-start',
-      alignItems: 'center',
-    }}>
-      
-      {/* 👇 Updated to display the header logo */}
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 10 }}>
-        <img src="/clamia-logo.png" alt="Clamia Logo" style={{ height: 40, marginRight: 10 }} />
-      </div>
-
+    <main style={{ minHeight: '100vh', background: colors.background, fontFamily: 'system-ui, Arial, sans-serif', padding: 0 }}>
       <div style={{
-        background: 'none',  // Removed background color from the bubbles
-        padding: 20,
-        marginBottom: 20,
-        minHeight: 300,
-        width: '100%',
         display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-start'
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        background: colors.background
       }}>
-        {messages.map((msg, i) => (
-          <div key={i} style={{
-            padding: 12,
-            margin: '10px 0',
-            borderRadius: 8,
-            maxWidth: '80%',
-            display: 'inline-block',
-            textAlign: msg.role === 'assistant' ? 'left' : 'right',
-            marginLeft: msg.role === 'assistant' ? '10px' : 'auto',
-            marginRight: msg.role === 'user' ? '10px' : 'auto',
-            backgroundColor: msg.role === 'assistant' ? '#e9ecef' : '#cce5ff', // Adjust color here
-          }}>
-            {/* Logo added beside the assistant's message */}
-            {msg.role === 'assistant' && <img src="/clamia-logo-chat.png" alt="Clamia Logo" style={{ height: 20, marginRight: 10, verticalAlign: 'middle' }} />}
-            <span dangerouslySetInnerHTML={{ __html: msg.content }} />
-          </div>
-        ))}
-      </div>
-
-      {/* Input Section */}
-      <div style={{ display: 'flex', gap: 10, width: '100%' }}>
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-          placeholder="Type your message..."
-          style={{
-            flex: 1,
-            padding: '10px',
-            borderRadius: '8px',
-            border: '1px solid #ccc',
-          }}
-        />
-        <button onClick={() => sendMessage()} disabled={loading} style={{
-          padding: '10px 16px',
-          borderRadius: '8px',
-          border: 'none',
-          background: '#007bff',
-          color: 'white',
+        <div style={{
+          background: colors.chatBg,
+          borderRadius: 18,
+          boxShadow: '0 12px 24px rgba(0,0,0,0.10)',
+          maxWidth: 470,
+          width: '100%',
+          maxHeight: 580,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden'
         }}>
-          {loading ? '...' : 'Send'}
-        </button>
+          {/* Header */}
+          <div style={{
+            background: '#19223a',
+            color: '#fff',
+            borderTopLeftRadius: 18,
+            borderTopRightRadius: 18,
+            padding: '16px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-start'
+          }}>
+            <img src="/clamia-logo-chat.png" alt="Clamia Logo" style={{ height: 40, marginRight: 10, borderRadius: '50%' }} />
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 18 }}>Chat with Clamia</div>
+            </div>
+          </div>
+          {/* Chat area */}
+          <div style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: '32px 18px 12px 18px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
+            background: colors.background,
+            scrollbarWidth: 'inherit'
+          }}>
+            {messages.map((msg, index) => (
+              <div
+                key={index}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                  width: '100%'
+                }}
+              >
+                <div
+                  style={{
+                    background: msg.role === 'user' ? colors.userBubble : colors.botBubble,
+                    color: msg.role === 'user' ? colors.userText : colors.text,
+                    borderRadius: 16,
+                    padding: '14px 18px',
+                    maxWidth: '75%',
+                    fontSize: 14,
+                    wordBreak: 'break-word',
+                    marginLeft: msg.role === 'user' ? 40 : 0,
+                    marginRight: msg.role === 'user' ? 0 : 40,
+                    position: 'relative',
+                    boxShadow: msg.role === 'user' ? '0 1px 4px rgba(25,34,58,0.10)' : '0 0px 1px black'
+                  }}
+                >
+                  {msg.image ? (
+                    <img src={msg.image} alt="Uploaded" style={{ maxWidth: '100%', borderRadius: 12 }} />
+                  ) : (
+                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  )}
+                </div>
+                <div style={{
+                  fontSize: 12,
+                  color: colors.time,
+                  marginTop: 6,
+                  marginBottom: 8,
+                  textAlign: msg.role === 'user' ? 'right' : 'left',
+                  maxWidth: '75%',
+                  marginLeft: msg.role === 'user' ? 40 : 0,
+                  marginRight: msg.role === 'user' ? 0 : 40
+                }}>
+                  {formatTime(msg.timestamp)}
+                </div>
+              </div>
+            ))}
+            <div ref={chatEndRef} />
+          </div>
+          {/* Input bar */}
+          <div style={{ padding: '18px', background: colors.chatBg, borderBottomLeftRadius: 16, borderBottomRightRadius: 16, borderTop: '1px solid #e3e6ea' }}>
+            <ChatFunctionality onNewMessage={handleNewMessage} messages={messages} theme={'light'} />
+          </div>
+        </div>
       </div>
     </main>
   );

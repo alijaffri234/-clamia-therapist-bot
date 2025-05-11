@@ -1,0 +1,1 @@
+self.__REACT_LOADABLE_MANIFEST="{\"ChatFunctionality.js -> tesseract.js\":{\"id\":\"ChatFunctionality.js -> tesseract.js\",\"files\":[\"static/chunks/node_modules_tesseract_js_src_index_js.js\"]}}"
