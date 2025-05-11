@@ -2,6 +2,7 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import ChatFunctionality from './ChatFunctionality';
 import ReactMarkdown from 'react-markdown';
 
+
 function formatTime(isoString) {
   const date = new Date(isoString);
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -14,12 +15,14 @@ export default function Home() {
     timestamp: new Date().toISOString()
   };
   const [messages, setMessages] = useState([defaultMessage]);
+  const [isBotTyping, setIsBotTyping] = useState(false);
   const chatEndRef = useRef(null);
 
   const handleNewMessage = useCallback(async (message) => {
     const newMessage = { ...message, timestamp: new Date().toISOString() };
     setMessages(prevMessages => [...prevMessages, newMessage]);
     if (message.role === 'user') {
+      setIsBotTyping(true);
       try {
         const response = await fetch('/api/chat', {
           method: 'POST',
@@ -27,10 +30,12 @@ export default function Home() {
           body: JSON.stringify({ messages: [...messages, newMessage] }),
         });
         const data = await response.json();
+        setIsBotTyping(false);
         if (data.reply) {
           setMessages(prevMessages => [...prevMessages, { ...data.reply, timestamp: new Date().toISOString() }]);
         }
       } catch {
+        setIsBotTyping(false);
         setMessages(prevMessages => [...prevMessages, {
           role: 'assistant',
           content: 'I apologize, but I encountered an error. Please try again.',
@@ -44,7 +49,7 @@ export default function Home() {
     if (chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages]);
+  }, [messages, isBotTyping]);
 
   // Theme colors (light mode for this UI)
   const colors = {
@@ -58,7 +63,7 @@ export default function Home() {
   };
 
   return (
-    <main style={{ minHeight: '100vh', background: colors.background, fontFamily: 'system-ui, Arial, sans-serif', padding: 0 }}>
+    <main style={{ minHeight: '100vh', background: colors.background, fontFamily: 'system-ui, Arial, sans-serif', padding: 0}}>
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -90,7 +95,7 @@ export default function Home() {
           }}>
             <img src="/clamia-logo-chat.png" alt="Clamia Logo" style={{ height: 40, marginRight: 10, borderRadius: '50%' }} />
             <div>
-              <div style={{ fontWeight: 700, fontSize: 18 }}>Chat with Clamia</div>
+              <div style={{ fontWeight: 700, fontSize: 18, }}>Chat with Clamia</div>
             </div>
           </div>
           {/* Chat area */}
@@ -149,6 +154,33 @@ export default function Home() {
                 </div>
               </div>
             ))}
+            {/* Typing indicator */}
+            {isBotTyping && (
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                width: '100%'
+              }}>
+                <div style={{
+                  background: colors.botBubble,
+                  color: colors.text,
+                  borderRadius: 16,
+                  padding: '14px 18px',
+                  maxWidth: '75%',
+                  fontSize: 14,
+                  wordBreak: 'break-word',
+                  marginLeft: 0,
+                  marginRight: 40,
+                  position: 'relative',
+                  boxShadow: '0 0px 1px black',
+                  fontStyle: 'italic',
+                  opacity: 0.7
+                }}>
+                  Clamia is typing...
+                </div>
+              </div>
+            )}
             <div ref={chatEndRef} />
           </div>
           {/* Input bar */}
