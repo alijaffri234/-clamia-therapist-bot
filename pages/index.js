@@ -101,6 +101,7 @@ export default function Home() {
   const [clientReportDate, setClientReportDate] = useState(null);
   const chatEndRef = useRef(null);
   const reportRef = useRef(null);
+  const [showWelcome, setShowWelcome] = useState(true);
 
   // Check if intro phase is complete (name, age, country)
   const introComplete = (() => {
@@ -224,6 +225,56 @@ export default function Home() {
   const reportDateString = reportDate
     ? `${reportDate.toLocaleDateString()} at ${reportDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
     : '';
+
+  // Show welcome screen if not started
+  if (showWelcome) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#f5f6fa', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: '100%', maxWidth: 480, textAlign: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 32 }}>
+            <div style={{ background: '#ffff', borderRadius: '50%', width: 80, height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
+              <img src="/clamia-logo-chat.png" alt="Clamia Logo" style={{ width: 80, height: 80 }} />
+            </div>
+            <div style={{ fontWeight: 700, fontSize: 30, color: '#232323', marginBottom: 8 }}>Welcome to Empatheia</div>
+            <div style={{ color: '#888', fontSize: 16, marginBottom: 0 }}>Your AI therapy companion for emotional support and guidance</div>
+          </div>
+          <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', padding: '20px', margin: '0 auto 32px auto', maxWidth: 420, textAlign: 'left' }}>
+            <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 18 }}>How Empatheia can help you:</div>
+            <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 10 }}>
+              <div style={{ background: '#b9a7f7', color: '#fff', borderRadius: '50%', width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 16, marginRight: 14 }}>1</div>
+              <div style={{ color: '#232323', fontSize: 16 }}>Express your thoughts and feelings in a safe space</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 10 }}>
+              <div style={{ background: '#b9a7f7', color: '#fff', borderRadius: '50%', width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 16, marginRight: 14 }}>2</div>
+              <div style={{ color: '#232323', fontSize: 16 }}>Receive supportive and thoughtful responses</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 10 }}>
+              <div style={{ background: '#b9a7f7', color: '#fff', borderRadius: '50%', width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 16, marginRight: 14 }}>3</div>
+              <div style={{ color: '#232323', fontSize: 16 }}>Develop coping strategies for difficult situations</div>
+            </div>
+            <div style={{ color: '#888', fontSize: 14, marginTop: 18 }}>Note: Empatheia is not a substitute for professional mental health treatment.</div>
+          </div>
+          <button
+            onClick={() => setShowWelcome(false)}
+            style={{
+              background: '#b9a7f7',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 12,
+              padding: '16px 48px',
+              fontSize: 18,
+              fontWeight: 600,
+              cursor: 'pointer',
+              marginTop: 16,
+              boxShadow: '0 2px 8px rgba(185,167,247,0.10)'
+            }}
+          >
+            Start Chatting
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Render report if session ended
   if (showSummary && moodSummary) {
