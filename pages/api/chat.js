@@ -1,3 +1,5 @@
+import Sentiment from 'sentiment';
+
 // Rate limiting configuration
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
 const MAX_REQUESTS_PER_WINDOW = 10; // 10 requests per minute
@@ -100,6 +102,18 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: validationError.message });
     }
 
+    // Sentiment analysis for first and last user messages
+    const sentiment = new Sentiment();
+    const userMessages = messages.filter(m => m.role === 'user' && typeof m.content === 'string');
+    let startMood = null;
+    let endMood = null;
+    if (userMessages.length > 0) {
+      const firstScore = sentiment.analyze(userMessages[0].content).score;
+      const lastScore = sentiment.analyze(userMessages[userMessages.length - 1].content).score;
+      startMood = firstScore > 2 ? 'positive' : firstScore < -2 ? 'negative' : 'neutral';
+      endMood = lastScore > 2 ? 'positive' : lastScore < -2 ? 'negative' : 'neutral';
+    }
+
     // Add timeout to the fetch request
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
@@ -165,7 +179,11 @@ You are Clamia, a compassionate, professional, and experienced **licensed mental
     
     if (data.choices && data.choices.length > 0) {
       logRequest(req, 200);
-      res.status(200).json({ reply: data.choices[0].message });
+      res.status(200).json({ 
+        reply: data.choices[0].message,
+        startMood,
+        endMood
+      });
     } else {
       throw new Error('No response from OpenAI');
     }
