@@ -86,13 +86,264 @@ function getMoodProgression(messages) {
   });
 }
 
-export default function Home() {
-  const defaultMessage = {
-    role: 'assistant',
-    content: "Hi, I'm **Clamia**. I'm your AI therapist, trained to understand your emotions and provide personalized therapy sessions.\n\nWhat can I help you with today?",
-    timestamp: new Date().toISOString()
+function OnboardingForm({ onComplete }) {
+  const [step, setStep] = useState(1);
+  const [form, setForm] = useState({
+    name: '',
+    age: '',
+    gender: '',
+    country: '',
+    therapyType: '',
+    religion: '',
+    description: '',
+  });
+  const [errors, setErrors] = useState({});
+  const [animating, setAnimating] = useState(false);
+
+  const genderOptions = [
+    { value: '', label: 'Select your gender' },
+    { value: 'male', label: 'Male' },
+    { value: 'female', label: 'Female' },
+    { value: 'non-binary', label: 'Non-Binary' },
+    { value: 'prefer_not_to_say', label: 'Prefer Not to Say' },
+  ];
+  const therapyOptions = [
+    { value: '', label: 'Select therapy type' },
+    { value: 'anxiety', label: 'Anxiety' },
+    { value: 'depression', label: 'Depression' },
+    { value: 'relationship', label: 'Relationship' },
+    { value: 'stress', label: 'Stress' },
+    { value: 'grief', label: 'Grief' },
+    { value: 'self_esteem', label: 'Self-Esteem' },
+    { value: 'family_therapy', label: 'Family Therapy' },
+    { value: 'career_counseling', label: 'Career Counseling' },
+    { value: 'other', label: 'Other' },
+  ];
+  const religionOptions = [
+    { value: '', label: 'Select your religion' },
+    { value: 'christianity', label: 'Christianity' },
+    { value: 'islam', label: 'Islam' },
+    { value: 'hinduism', label: 'Hinduism' },
+    { value: 'buddhism', label: 'Buddhism' },
+    { value: 'judaism', label: 'Judaism' },
+    { value: 'none', label: 'None' },
+    { value: 'other', label: 'Other' },
+  ];
+
+  const validateStep1 = () => {
+    const errs = {};
+    if (!form.name.trim()) errs.name = 'Name is required';
+    if (!form.age.trim() || isNaN(form.age) || +form.age < 1) errs.age = 'Valid age required';
+    if (!form.gender) errs.gender = 'Gender is required';
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
   };
-  const [messages, setMessages] = useState([defaultMessage]);
+  const validateStep2 = () => {
+    const errs = {};
+    if (!form.country.trim()) errs.country = 'Country is required';
+    if (!form.therapyType) errs.therapyType = 'Type of therapy is required';
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm(f => ({ ...f, [name]: value }));
+  };
+
+  const handleNext = (e) => {
+    e.preventDefault();
+    if (validateStep1()) {
+      setAnimating(true);
+      setTimeout(() => {
+        setStep(2);
+        setAnimating(false);
+      }, 250);
+    }
+  };
+  const handleBack = (e) => {
+    e.preventDefault();
+    setAnimating(true);
+    setTimeout(() => {
+      setStep(1);
+      setAnimating(false);
+    }, 250);
+  };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (validateStep2()) onComplete(form);
+  };
+
+  // Add a reusable icon style
+  const iconStyle = { display: 'flex', alignItems: 'center', color: '#7E3AED', minWidth: 20 };
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#f6faff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, fontFamily: 'system-ui, Arial, sans-serif' }}>
+      <div style={{ width: '100%', maxWidth: 896, textAlign: 'center', fontFamily: 'system-ui, Arial, sans-serif' }}>
+        <img src="/clamia-logo-chat.png" alt="Clamia Logo" style={{ width: 48, height: 48, borderRadius: '16px', marginBottom: 18, marginTop: 8 }} />
+        <div style={{ fontWeight: 600, fontSize: 34, color: '#232323', marginBottom: 8 }}>Begin Your Healing Journey</div>
+        <div style={{ color: '#6b7a90', fontSize: 18, marginBottom: 50 }}>Take the first step toward better mental well-being with personalized AI therapy.</div>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginBottom: 50 }}>
+          <div style={{ background: '#fff', borderRadius: 12, padding: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', minWidth: 200, textAlign: 'left', border: '1px solid #e3e6ea', fontFamily: 'system-ui, Arial, sans-serif' }}>
+            <div style={{ fontWeight: 600, color: '#232323', marginBottom: 24 }}><span style={{ color: '#7E3AED', marginRight: 6 }}>🛡️</span>Confidential Sessions</div>
+            <div style={{ color: '#6b7a90', fontSize: 15 }}>Your conversations are private and secure. Share openly without judgment.</div>
+          </div>
+          <div style={{ background: '#fff', borderRadius: 12, padding: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', minWidth: 200, textAlign: 'left', border: '2px solid #7E3AED', fontFamily: 'system-ui, Arial, sans-serif' }}>
+            <div style={{ fontWeight: 600, color: '#232323', marginBottom: 24 }}><span style={{ color: '#7E3AED', marginRight: 6 }}>✔️</span>Personalized Guidance</div>
+            <div style={{ color: '#6b7a90', fontSize: 15 }}>Receive tailored advice based on your specific needs and situation.</div>
+          </div>
+        </div>
+        <form style={{ background: '#fff', borderRadius: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', padding: '32px 24px', margin: '0 auto', maxWidth: 556, textAlign: 'left', borderTop: '4px solid #7E3AED', position: 'relative', minHeight: 340, transition: 'all 0.3s', opacity: animating ? 0.5 : 1, fontFamily: 'system-ui, Arial, sans-serif' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: step === 1 ? '#7E3AED' : '#e3e6ea', color: step === 1 ? '#fff' : '#232323', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 18, transition: 'background 0.3s' }}>1</div>
+              <div style={{ width: 32, height: 2, background: '#e3e6ea' }} />
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: step === 2 ? '#7E3AED' : '#e3e6ea', color: step === 2 ? '#fff' : '#232323', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 18, transition: 'background 0.3s' }}>2</div>
+            </div>
+          </div>
+          <div style={{ fontWeight: 700, fontSize: 22, marginBottom: 8, textAlign: 'center' }}>Tell Us About Yourself</div>
+          <div style={{ color: '#6b7a90', fontSize: 15, marginBottom: 24, textAlign: 'center' }}>Help us personalize your therapy experience.</div>
+          {step === 1 && (
+            <>
+              <div style={{ marginBottom: 18 }}>
+                <label style={{ fontWeight: 600, fontSize: 15, display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'system-ui, Arial, sans-serif' }}>
+                  <span style={iconStyle}>
+                    {/* User SVG icon */}
+                    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                      <circle cx="12" cy="8" r="4" />
+                      <path d="M4 20c0-4 8-4 8-4s8 0 8 4" />
+                    </svg>
+                  </span> Name
+                </label>
+                <input name="name" value={form.name} onChange={handleChange} placeholder="Enter your name" style={{ width: '95%', padding: 12, borderRadius: 8, border: '1px solid #e3e6ea', marginTop: 6, fontSize: 15, background: '#fff', fontFamily: 'system-ui, Arial, sans-serif' }} />
+                {errors.name && <div style={{ color: '#e57373', fontSize: 13, marginTop: 4 }}>{errors.name}</div>}
+              </div>
+              <div style={{ marginBottom: 18 }}>
+                <label style={{ fontWeight: 600, fontSize: 15, display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'system-ui, Arial, sans-serif' }}>
+                  <span style={iconStyle}>
+                    {/* Calendar SVG icon */}
+                    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                      <rect x="3" y="5" width="18" height="16" rx="3" />
+                      <path d="M16 3v4M8 3v4M3 9h18" />
+                    </svg>
+                  </span> Age
+                </label>
+                <input name="age" type="number" min="1" value={form.age} onChange={handleChange} placeholder="Enter your age" style={{ width: '95%', padding: 12, borderRadius: 8, border: '1px solid #e3e6ea', marginTop: 6, fontSize: 15, background: '#fff', fontFamily: 'system-ui, Arial, sans-serif' }} />
+                {errors.age && <div style={{ color: '#e57373', fontSize: 13, marginTop: 4 }}>{errors.age}</div>}
+              </div>
+              <div style={{ marginBottom: 18 }}>
+                <label style={{ fontWeight: 600, fontSize: 15, display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'system-ui, Arial, sans-serif' }}>
+                  <span style={iconStyle}>
+                    {/* Gender SVG icon (user circle) */}
+                    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                      <circle cx="12" cy="8" r="4" />
+                      <path d="M4 20c0-4 8-4 8-4s8 0 8 4" />
+                    </svg>
+                  </span> Gender
+                </label>
+                <select name="gender" value={form.gender} onChange={handleChange} style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #e3e6ea', marginTop: 6, fontSize: 15, background: '#fff', fontFamily: 'system-ui, Arial, sans-serif' }}>
+                  {genderOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                </select>
+                {errors.gender && <div style={{ color: '#e57373', fontSize: 13, marginTop: 4 }}>{errors.gender}</div>}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <button onClick={handleNext} style={{ background: '#7E3AED', color: '#fff', border: 'none', borderRadius: 8, padding: '14px 0', width: '100%', maxWidth: 300, fontWeight: 700, fontSize: 17, marginTop: 8, cursor: 'pointer', boxShadow: '0 2px 8px rgba(126,58,237,0.08)', transition: 'background 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'system-ui, Arial, sans-serif' }}>
+                  Continue <span style={{ marginLeft: 0, transform: 'rotate(45deg)', display: 'inline-flex', alignItems: 'center' , marginTop: 1 }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline', verticalAlign: 'middle', marginTop: 3 }}>
+                      <path d="M22 2L11 13" />
+                      <path d="M22 2L15 22L11 13L2 9L22 2Z" />
+                    </svg>
+                  </span>
+                </button>
+              </div>
+            </>
+          )}
+          {step === 2 && (
+            <>
+              <div style={{ marginBottom: 18 }}>
+                <label style={{ fontWeight: 600, fontSize: 15, display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'system-ui, Arial, sans-serif' }}>
+                  <span style={iconStyle}>
+                    {/* Globe SVG icon */}
+                    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10" />
+                      <ellipse cx="12" cy="12" rx="10" ry="4" />
+                    </svg>
+                  </span> Country
+                </label>
+                <input name="country" value={form.country} onChange={handleChange} placeholder="Enter your country" style={{ width: '95%', padding: 12, borderRadius: 8, border: '1px solid #e3e6ea', marginTop: 6, fontSize: 15, background: '#fff', fontFamily: 'system-ui, Arial, sans-serif' }} />
+                {errors.country && <div style={{ color: '#e57373', fontSize: 13, marginTop: 4 }}>{errors.country}</div>}
+              </div>
+              <div style={{ marginBottom: 18 }}>
+                <label style={{ fontWeight: 600, fontSize: 15, display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'system-ui, Arial, sans-serif' }}>
+                  <span style={iconStyle}>
+                    {/* Chat bubble SVG icon */}
+                    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                      <rect x="3" y="5" width="18" height="12" rx="4" />
+                      <path d="M8 19l2-2h4l2 2" />
+                    </svg>
+                  </span> Type of Therapy
+                </label>
+                <select name="therapyType" value={form.therapyType} onChange={handleChange} style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #e3e6ea', marginTop: 6, fontSize: 15, background: '#fff', fontFamily: 'system-ui, Arial, sans-serif' }}>
+                  {therapyOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                </select>
+                {errors.therapyType && <div style={{ color: '#e57373', fontSize: 13, marginTop: 4 }}>{errors.therapyType}</div>}
+              </div>
+              <div style={{ marginBottom: 18 }}>
+                <label style={{ fontWeight: 600, fontSize: 15, display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'system-ui, Arial, sans-serif' }}>
+                  <span style={iconStyle}>
+                    {/* Lotus SVG icon for religion */}
+                    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                      <path d="M12 2c1.5 2.5 4 7 4 10a4 4 0 1 1-8 0c0-3 2.5-7.5 4-10z" />
+                      <path d="M12 22c-4-2-7-6-7-10 0-2.5 2-5 7-5s7 2.5 7 5c0 4-3 8-7 10z" />
+                    </svg>
+                  </span> Religion (Optional)
+                </label>
+                <select name="religion" value={form.religion} onChange={handleChange} style={{ width: '100%', padding: 12, borderRadius: 8, border: '1px solid #e3e6ea', marginTop: 6, fontSize: 15, background: '#fff', fontFamily: 'system-ui, Arial, sans-serif' }}>
+                  {religionOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                </select>
+              </div>
+              <div style={{ marginBottom: 18 }}>
+                <label style={{ fontWeight: 600, fontSize: 15, display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'system-ui, Arial, sans-serif' }}>
+                  <span style={iconStyle}>
+                    {/* Note SVG icon for description */}
+                    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                      <rect x="4" y="4" width="16" height="16" rx="2" />
+                      <path d="M8 8h8M8 12h8M8 16h4" />
+                    </svg>
+                  </span> Brief Description of Your Situation (Optional)
+                </label>
+                <textarea name="description" value={form.description} onChange={handleChange} placeholder="Please briefly describe what brings you here today..." style={{ width: '95%', resize: 'none',padding: 12, borderRadius: 8, border: '1px solid #e3e6ea', marginTop: 6, minHeight: 70, fontSize: 15, background: '#fff', fontFamily: 'system-ui, Arial, sans-serif' }} />
+              </div>
+              <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+                <button onClick={handleBack} style={{ background: '#e3e6ea', color: '#232323', border: 'none', borderRadius: 8, padding: '14px 0', width: '50%', fontWeight: 700, fontSize: 17, cursor: 'pointer', transition: 'background 0.2s', fontFamily: 'system-ui, Arial, sans-serif' }}>Back</button>
+                <button onClick={handleSubmit} style={{ background: '#7E3AED', color: '#fff', border: 'none', borderRadius: 8, padding: '14px 0', width: '50%', fontWeight: 700, fontSize: 17, cursor: 'pointer', boxShadow: '0 2px 8px rgba(126,58,237,0.08)', transition: 'background 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'system-ui, Arial, sans-serif' }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', rowGap: 8 }}>
+                    Start Chatting
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline', verticalAlign: 'middle', transform: 'rotate(45deg)', marginLeft: 8, marginTop: 3 }}>
+                      <path d="M22 2L11 13" />
+                      <path d="M22 2L15 22L11 13L2 9L22 2Z" />
+                    </svg>
+                  </span>
+                </button>
+              </div>
+            </>
+          )}
+        </form>
+        <div style={{ color: '#a3b3c7', fontSize: 13, marginTop: 18, marginBottom: 0, textAlign: 'center', padding: '0 18px', fontFamily: 'system-ui, Arial, sans-serif' }}>
+          Your information is confidential and will only be used to personalize your therapy experience.
+        </div>
+        <div style={{ color: '#bfc9d6', fontSize: 13, marginTop: 32, marginBottom: 0, textAlign: 'center', padding: '0 18px', fontFamily: 'system-ui, Arial, sans-serif' }}>
+          © 2025 Clamia AI Therapist. All rights reserved.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function Home() {
+  // All hooks must be declared at the top, before any conditional return
+  const [userInfo, setUserInfo] = useState(null);
+  const [messages, setMessages] = useState([]);
   const [isBotTyping, setIsBotTyping] = useState(false);
   const [moodSummary, setMoodSummary] = useState(null);
   const [endingSession, setEndingSession] = useState(false);
@@ -101,13 +352,31 @@ export default function Home() {
   const [clientReportDate, setClientReportDate] = useState(null);
   const chatEndRef = useRef(null);
   const reportRef = useRef(null);
-  const [showWelcome, setShowWelcome] = useState(true);
 
-  // Check if intro phase is complete (name, age, country)
-  const introComplete = (() => {
-    const userMessages = messages.filter(m => m.role === 'user' && typeof m.content === 'string');
-    return userMessages.length >= 3;
-  })();
+  // Set personalized welcome message after onboarding
+  useEffect(() => {
+    if (userInfo && messages.length === 0) {
+      setMessages([{
+        role: 'assistant',
+        content: `Hi ${userInfo.name}, I'm here to support you. I understand you are seeking help with ${userInfo.therapyType.replace(/_/g, ' ')}. How can I support you today?`,
+        timestamp: new Date().toISOString()
+      }]);
+    }
+  }, [userInfo, messages.length]);
+
+  // Scroll chat to bottom on new message or typing
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, isBotTyping]);
+
+  // Set report date on client to avoid hydration error
+  useEffect(() => {
+    if (showSummary && !clientReportDate) {
+      setClientReportDate(new Date());
+    }
+  }, [showSummary, clientReportDate]);
 
   const handleNewMessage = useCallback(async (message) => {
     const newMessage = { ...message, timestamp: new Date().toISOString() };
@@ -136,30 +405,34 @@ export default function Home() {
     }
   }, [messages]);
 
-  useEffect(() => {
-    if (chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages, isBotTyping]);
+  // All hooks are above this line. Only use conditional logic for rendering below.
+  if (!userInfo) {
+    return <OnboardingForm onComplete={setUserInfo} />;
+  }
 
-  // Set report date on client to avoid hydration error
-  useEffect(() => {
-    if (showSummary && !clientReportDate) {
-      setClientReportDate(new Date());
-    }
-  }, [showSummary, clientReportDate]);
+  const defaultMessage = {
+    role: 'assistant',
+    content: "Hi, I'm **Clamia**. I'm your AI therapist, trained to understand your emotions and provide personalized therapy sessions.\n\nWhat can I help you with today?",
+    timestamp: new Date().toISOString()
+  };
+
+  // Check if intro phase is complete (name, age, country)
+  const introComplete = (() => {
+    const userMessages = messages.filter(m => m.role === 'user' && typeof m.content === 'string');
+    return userMessages.length >= 3;
+  })();
 
   // Theme colors (light mode for this UI)
   const colors = {
     background: '#f5f6fa',
     chatBg: '#fff',
-    userBubble: '#19223a',
+    userBubble: '#7E3AED',
     botBubble: '#f5f6fa',
     text: '#232323',
     userText: '#fff',
     time: '#888',
-    endSession: '#e57373', // soft red
-    endSessionHover: '#d32f2f',
+    endSession: '#7E3AED',
+    endSessionHover: '#5e2bbd',
     summaryBg: '#fff',
     summaryBorder: '#e3e6ea',
     reportCard: '#fff',
@@ -167,9 +440,9 @@ export default function Home() {
     reportStatBg: '#f7f7fa',
     reportStatText: '#232323',
     reportStatLabel: '#888',
-    reportSenderUser: '#19223a',
+    reportSenderUser: '#7E3AED',
     reportSenderBot: '#388e3c',
-    reportButton: '#a3a6f7',
+    reportButton: '#7E3AED',
     reportButtonText: '#fff',
   };
 
@@ -225,56 +498,6 @@ export default function Home() {
   const reportDateString = reportDate
     ? `${reportDate.toLocaleDateString()} at ${reportDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
     : '';
-
-  // Show welcome screen if not started
-  if (showWelcome) {
-    return (
-      <div style={{ minHeight: '100vh', background: '#f5f6fa', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ width: '100%', maxWidth: 480, textAlign: 'center' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 32 }}>
-            <div style={{ background: '#ffff', borderRadius: '50%', width: 80, height: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
-              <img src="/clamia-logo-chat.png" alt="Clamia Logo" style={{ width: 80, height: 80 }} />
-            </div>
-            <div style={{ fontWeight: 700, fontSize: 30, color: '#232323', marginBottom: 8 }}>Welcome to Empatheia</div>
-            <div style={{ color: '#888', fontSize: 16, marginBottom: 0 }}>Your AI therapy companion for emotional support and guidance</div>
-          </div>
-          <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', padding: '20px', margin: '0 auto 32px auto', maxWidth: 420, textAlign: 'left' }}>
-            <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 18 }}>How Empatheia can help you:</div>
-            <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 10 }}>
-              <div style={{ background: '#b9a7f7', color: '#fff', borderRadius: '50%', width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 16, marginRight: 14 }}>1</div>
-              <div style={{ color: '#232323', fontSize: 16 }}>Express your thoughts and feelings in a safe space</div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 10 }}>
-              <div style={{ background: '#b9a7f7', color: '#fff', borderRadius: '50%', width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 16, marginRight: 14 }}>2</div>
-              <div style={{ color: '#232323', fontSize: 16 }}>Receive supportive and thoughtful responses</div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 10 }}>
-              <div style={{ background: '#b9a7f7', color: '#fff', borderRadius: '50%', width: 26, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 16, marginRight: 14 }}>3</div>
-              <div style={{ color: '#232323', fontSize: 16 }}>Develop coping strategies for difficult situations</div>
-            </div>
-            <div style={{ color: '#888', fontSize: 14, marginTop: 18 }}>Note: Empatheia is not a substitute for professional mental health treatment.</div>
-          </div>
-          <button
-            onClick={() => setShowWelcome(false)}
-            style={{
-              background: '#b9a7f7',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 12,
-              padding: '16px 48px',
-              fontSize: 18,
-              fontWeight: 600,
-              cursor: 'pointer',
-              marginTop: 16,
-              boxShadow: '0 2px 8px rgba(185,167,247,0.10)'
-            }}
-          >
-            Start Chatting
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   // Render report if session ended
   if (showSummary && moodSummary) {
