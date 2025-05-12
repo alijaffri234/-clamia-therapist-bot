@@ -182,17 +182,26 @@ function OnboardingForm({ onComplete }) {
       <div style={{ width: '100%', maxWidth: 896, textAlign: 'center', fontFamily: 'system-ui, Arial, sans-serif' }}>
         <img src="/clamia-logo-chat.png" alt="Clamia Logo" style={{ width: 48, height: 48, borderRadius: '16px', marginBottom: 18, marginTop: 8 }} />
         <div style={{ fontWeight: 600, fontSize: 34, color: '#232323', marginBottom: 8 }}>Begin Your Healing Journey</div>
-        <div style={{ color: '#6b7a90', fontSize: 18, marginBottom: 50 }}>Take the first step toward better mental well-being with personalized AI therapy.</div>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginBottom: 50 }}>
-          <div style={{ background: '#fff', borderRadius: 12, padding: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', minWidth: 200, textAlign: 'left', border: '1px solid #e3e6ea', fontFamily: 'system-ui, Arial, sans-serif' }}>
-            <div style={{ fontWeight: 600, color: '#232323', marginBottom: 24 }}><span style={{ color: '#7E3AED', marginRight: 6 }}>🛡️</span>Confidential Sessions</div>
+       <div style={{ color: '#6b7a90', fontSize: 18, marginBottom: 50 }}>Take the first step toward better mental well-being with personalized AI therapy.</div>
+        <div className="clamia-onboarding-cards" style={{ display: 'flex', justifyContent: 'center', gap: 24, marginBottom: 50, flexWrap: 'wrap' }}>
+          <div style={{ background: '#fff', borderRadius: 12, padding: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', flex: '1 1 0px', textAlign: 'left', border: '1px solid #e3e6ea', fontFamily: 'system-ui, Arial, sans-serif' }}>
+            <div style={{ fontWeight: 600, color: '#232323', marginBottom: 18 }}><span style={{ color: '#7E3AED', marginRight: 6 }}>🛡️</span>Confidential Sessions</div>
             <div style={{ color: '#6b7a90', fontSize: 15 }}>Your conversations are private and secure. Share openly without judgment.</div>
           </div>
-          <div style={{ background: '#fff', borderRadius: 12, padding: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', minWidth: 200, textAlign: 'left', border: '2px solid #7E3AED', fontFamily: 'system-ui, Arial, sans-serif' }}>
-            <div style={{ fontWeight: 600, color: '#232323', marginBottom: 24 }}><span style={{ color: '#7E3AED', marginRight: 6 }}>✔️</span>Personalized Guidance</div>
+          <div style={{ background: '#fff', borderRadius: 12, padding: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', flex: '1 1 0px', textAlign: 'left', border: '2px solid #7E3AED', fontFamily: 'system-ui, Arial, sans-serif'}}>
+            <div style={{ fontWeight: 600, color: '#232323', marginBottom: 18 }}><span style={{ color: '#7E3AED', marginRight: 6 }}>✔️</span>Personalized Guidance</div>
             <div style={{ color: '#6b7a90', fontSize: 15 }}>Receive tailored advice based on your specific needs and situation.</div>
           </div>
-        </div>
+        </div> 
+        <style jsx>{`
+          @media (max-width: 600px) {
+            .clamia-onboarding-cards {
+              flex-direction: column !important;
+              gap: 16px !important;
+              margin-bottom: 32px !important;
+            }
+          }
+        `}</style>
         <form style={{ background: '#fff', borderRadius: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', padding: '32px 24px', margin: '0 auto', maxWidth: 556, textAlign: 'left', borderTop: '4px solid #7E3AED', position: 'relative', minHeight: 340, transition: 'all 0.3s', opacity: animating ? 0.5 : 1, fontFamily: 'system-ui, Arial, sans-serif' }}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

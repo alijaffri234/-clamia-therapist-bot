@@ -1,0 +1,41 @@
+@media (max-width: 600px) {
+  .clamia-onboarding-cards {
+    flex-direction: column !important;
+    gap: 16px !important;
+    margin-bottom: 32px !important;
+  }
+
+}
+
+@media (max-width: 360px) {
+  body {
+    font-size: 14px;
+    margin: 0;
+    padding: 0;
+  }
+  .clamia-onboarding-cards {
+    gap: 8px !important;
+    margin-bottom: 16px !important;
+    padding: 0 4px;
+  }
+  .onboarding-card,
+  .personalized-guidance {
+    padding: 2px !important;
+    margin: 0;
+  }
+  input, select, textarea, button {
+    font-size: 14px;
+    padding: 6px;
+    margin: 2px 0;
+  }
+  button {
+    padding: 8px 12px;
+    margin: 2px 0;
+  }
+  .card-title {
+    margin-bottom: 4px;
+  }
+  .card-description {
+    margin: 0;
+  }
+} 
