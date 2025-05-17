@@ -184,13 +184,17 @@ function OnboardingForm({ onComplete }) {
         <div style={{ fontWeight: 600, fontSize: 34, color: '#232323', marginBottom: 8 }}>Begin Your Healing Journey</div>
        <div style={{ color: '#6b7a90', fontSize: 18, marginBottom: 50 }}>Take the first step toward better mental well-being with personalized AI therapy.</div>
         <div className="clamia-onboarding-cards" style={{ display: 'flex', justifyContent: 'center', gap: 24, marginBottom: 50, flexWrap: 'wrap' }}>
-          <div style={{ background: '#fff', borderRadius: 12, padding: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', flex: '1 1 0px', textAlign: 'left', border: '1px solid #e3e6ea', fontFamily: 'system-ui, Arial, sans-serif' }}>
-            <div style={{ fontWeight: 600, color: '#232323', marginBottom: 18 }}><span style={{ color: '#7E3AED', marginRight: 6 }}>🛡️</span>Confidential Sessions</div>
+          <div className="onboarding-card" style={{ background: '#fff', borderRadius: 12, padding: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', flex: '1 1 0px', textAlign: 'left', border: '1px solid #e3e6ea', fontFamily: 'system-ui, Arial, sans-serif' }}>
+            <div className="card-title" style={{ fontWeight: 600, color: '#232323', marginBottom: 18 }}><span style={{ color: '#7E3AED', marginRight: 6 }}>🛡️</span>Confidential Sessions</div>
             <div style={{ color: '#6b7a90', fontSize: 15 }}>Your conversations are private and secure. Share openly without judgment.</div>
           </div>
-          <div style={{ background: '#fff', borderRadius: 12, padding: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', flex: '1 1 0px', textAlign: 'left', border: '2px solid #7E3AED', fontFamily: 'system-ui, Arial, sans-serif'}}>
-            <div style={{ fontWeight: 600, color: '#232323', marginBottom: 18 }}><span style={{ color: '#7E3AED', marginRight: 6 }}>✔️</span>Personalized Guidance</div>
-            <div style={{ color: '#6b7a90', fontSize: 15 }}>Receive tailored advice based on your specific needs and situation.</div>
+          <div className="card personalized-guidance">
+            <div className="card-title">
+              <span className="icon">✔️</span>Personalized Guidance
+            </div>
+            <div className="card-description">
+              Receive tailored advice based on your specific needs and situation.
+            </div>
           </div>
         </div> 
         <style jsx>{`
@@ -362,14 +366,25 @@ export default function Home() {
   const chatEndRef = useRef(null);
   const reportRef = useRef(null);
 
-  // Set personalized welcome message after onboarding
+  // Set personalized, situation-specific welcome message after onboarding
   useEffect(() => {
     if (userInfo && messages.length === 0) {
+      const initialMsg = getInitialSupportMessage(userInfo);
       setMessages([{
         role: 'assistant',
-        content: `Hi ${userInfo.name}, I'm here to support you. I understand you are seeking help with ${userInfo.therapyType.replace(/_/g, ' ')}. How can I support you today?`,
+        content: initialMsg,
         timestamp: new Date().toISOString()
       }]);
+      // Optionally, send this message to the backend for context (not shown to user)
+      fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [{ role: 'assistant', content: initialMsg + ', but I want to get rid of this.', timestamp: new Date().toISOString() }],
+          problemType: userInfo?.therapyType,
+          userInfo
+        })
+      });
     }
   }, [userInfo, messages.length]);
 
@@ -388,15 +403,20 @@ export default function Home() {
   }, [showSummary, clientReportDate]);
 
   const handleNewMessage = useCallback(async (message) => {
-    const newMessage = { ...message, timestamp: new Date().toISOString() };
-    setMessages(prevMessages => [...prevMessages, newMessage]);
+    // Append the required text to user messages before sending to backend
+    const messageToSend = {
+      ...message,
+      content: message.role === 'user' ? message.content : message.content,
+      timestamp: new Date().toISOString()
+    };
+    setMessages(prevMessages => [...prevMessages, messageToSend]);
     if (message.role === 'user') {
       setIsBotTyping(true);
       try {
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages: [...messages, newMessage] }),
+          body: JSON.stringify({ messages: [...messages, messageToSend], problemType: userInfo?.therapyType, userInfo }),
         });
         const data = await response.json();
         setIsBotTyping(false);
@@ -412,7 +432,7 @@ export default function Home() {
         }]);
       }
     }
-  }, [messages]);
+  }, [messages, userInfo]);
 
   // All hooks are above this line. Only use conditional logic for rendering below.
   if (!userInfo) {
@@ -421,7 +441,7 @@ export default function Home() {
 
   const defaultMessage = {
     role: 'assistant',
-    content: "Hi, I'm **Clamia**. I'm your AI therapist, trained to understand your emotions and provide personalized therapy sessions.\n\nWhat can I help you with today?",
+    content: getWelcomeMessage(userInfo),
     timestamp: new Date().toISOString()
   };
 
@@ -837,4 +857,33 @@ export default function Home() {
       </div>
     </main>
   );
+}
+
+function getWelcomeMessage(userInfo) {
+  return `Hi ${userInfo.name}, I'm here to support you. I understand you are seeking help with ${userInfo.therapyType.replace(/_/g, ' ')}. How can I support you today?`;
+}
+
+function getInitialSupportMessage(userInfo) {
+  const { name, therapyType } = userInfo;
+  const type = therapyType ? therapyType.toLowerCase() : '';
+  switch (type) {
+    case 'depression':
+      return `Hi ${name}, I'm here to support you. I understand you're seeking help with depression. Remember, you're not alone and it's okay to feel this way. Would you like to share what's been weighing on your mind lately?`;
+    case 'anxiety':
+      return `Hi ${name}, I'm here for you. I see you're seeking help with anxiety. Let's take a deep breath together. Would you like to talk about what's making you feel anxious right now?`;
+    case 'stress':
+      return `Hi ${name}, I'm here to help you manage stress. Life can be overwhelming, but together we can find ways to cope. What's been causing you stress lately?`;
+    case 'grief':
+      return `Hi ${name}, I'm here to support you through your grief. It's okay to feel a range of emotions. Would you like to talk about your experience?`;
+    case 'self_esteem':
+      return `Hi ${name}, I'm here to help you build your self-esteem. Let's explore your strengths together. What would you like to talk about today?`;
+    case 'family_therapy':
+      return `Hi ${name}, I'm here to support you with family therapy. Family relationships can be complex. Would you like to share what's on your mind?`;
+    case 'career_counseling':
+      return `Hi ${name}, I'm here to help you with career counseling. Let's talk about your goals and any challenges you're facing at work or in your career path.`;
+    case 'relationship':
+      return `Hi ${name}, I'm here to support you with relationship concerns. Relationships can be challenging, but you're not alone. Would you like to talk about what's been happening?`;
+    default:
+      return `Hi ${name}, I'm here to support you. How can I help you today?`;
+  }
 }
