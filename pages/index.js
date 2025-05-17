@@ -69,7 +69,9 @@ function moodToLabel(mood) {
     case 'sad': return 'Sad';
     case 'happy': return 'Happy';
     case 'very happy': return 'Very Happy';
-    default: return mood.charAt(0).toUpperCase() + mood.slice(1);
+    default:
+      if (!mood || typeof mood !== 'string') return 'Unknown';
+      return mood.charAt(0).toUpperCase() + mood.slice(1);
   }
 }
 
@@ -188,13 +190,9 @@ function OnboardingForm({ onComplete }) {
             <div className="card-title" style={{ fontWeight: 600, color: '#232323', marginBottom: 18 }}><span style={{ color: '#7E3AED', marginRight: 6 }}>🛡️</span>Confidential Sessions</div>
             <div style={{ color: '#6b7a90', fontSize: 15 }}>Your conversations are private and secure. Share openly without judgment.</div>
           </div>
-          <div className="card personalized-guidance">
-            <div className="card-title">
-              <span className="icon">✔️</span>Personalized Guidance
-            </div>
-            <div className="card-description">
-              Receive tailored advice based on your specific needs and situation.
-            </div>
+          <div className="card personalized-guidance" style={{ background: '#fff', borderRadius: 12, padding: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', flex: '1 1 0px', textAlign: 'left', border: '1px solid #e3e6ea', fontFamily: 'system-ui, Arial, sans-serif' }}>
+            <div className="card-title" style={{ fontWeight: 600, color: '#232323', marginBottom: 18 }}><span style={{ color: '#7E3AED', marginRight: 6 }}>✔️</span>Personalized Guidance</div>
+            <div style={{ color: '#6b7a90', fontSize: 15 }}>Receive tailored advice based on your specific needs and situation.</div>
           </div>
         </div> 
         <style jsx>{`
