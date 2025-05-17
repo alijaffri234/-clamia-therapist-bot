@@ -325,9 +325,9 @@ function OnboardingForm({ onComplete }) {
                 </label>
                 <textarea name="description" value={form.description} onChange={handleChange} placeholder="Please briefly describe what brings you here today..." style={{ width: '95%', resize: 'none',padding: 12, borderRadius: 8, border: '1px solid #e3e6ea', marginTop: 6, minHeight: 70, fontSize: 15, background: '#fff', fontFamily: 'system-ui, Arial, sans-serif' }} />
               </div>
-              <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-                <button onClick={handleBack} style={{ background: '#e3e6ea', color: '#232323', border: 'none', borderRadius: 8, padding: '14px 0', width: '50%', fontWeight: 700, fontSize: 17, cursor: 'pointer', transition: 'background 0.2s', fontFamily: 'system-ui, Arial, sans-serif' }}>Back</button>
-                <button onClick={handleSubmit} style={{ background: '#7E3AED', color: '#fff', border: 'none', borderRadius: 8, padding: '14px 0', width: '50%', fontWeight: 700, fontSize: 17, cursor: 'pointer', boxShadow: '0 2px 8px rgba(126,58,237,0.08)', transition: 'background 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'system-ui, Arial, sans-serif' }}>
+              <div style={{ display: 'flex', gap: 12, flexFlow: 'wrap', marginTop: 8 }}>
+                <button onClick={handleBack} style={{ background: '#e3e6ea', color: '#232323', border: 'none', borderRadius: 8, padding: '14px 0', width: '100%', fontWeight: 700, fontSize: 17, cursor: 'pointer', transition: 'background 0.2s', fontFamily: 'system-ui, Arial, sans-serif' }}>Back</button>
+                <button onClick={handleSubmit} style={{ background: '#7E3AED', color: '#fff', border: 'none', borderRadius: 8, padding: '14px 0', width: '100%', fontWeight: 700, fontSize: 17, cursor: 'pointer', boxShadow: '0 2px 8px rgba(126,58,237,0.08)', transition: 'background 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'system-ui, Arial, sans-serif' }}>
                   <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', rowGap: 8 }}>
                     Start Chatting
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline', verticalAlign: 'middle', transform: 'rotate(45deg)', marginLeft: 8, marginTop: 3 }}>
@@ -452,7 +452,7 @@ export default function Home() {
   // Theme colors (light mode for this UI)
   const colors = {
     background: '#f5f6fa',
-    chatBg: '#fff',
+    chatBg: 'transparent',
     userBubble: '#7E3AED',
     botBubble: '#f5f6fa',
     text: '#232323',
@@ -602,7 +602,7 @@ export default function Home() {
             background: colors.reportCard,
             border: `1px solid ${colors.reportBorder}`,
             borderRadius: 16,
-            padding: '36px 32px 32px 32px',
+            padding: '24px 16px 24px 16px',
             maxWidth: 800,
             width: '100%',
             boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
@@ -613,7 +613,7 @@ export default function Home() {
           <div style={{ textAlign: 'center', color: colors.time, marginBottom: 32 }}>Session completed on {reportDateString}</div>
           {/* Mood Tracking Chart */}
           <div style={{ fontWeight: 600, fontSize: 20, marginBottom: 12 }}>Mood Tracking</div>
-          <div style={{ background: '#f7f7fa', borderRadius: 16, padding: 24, marginBottom: 32, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ background: '#f7f7fa', borderRadius: 16, padding: 24, marginBottom: 16, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <div style={{ width: '100%', maxWidth: 500, height: 220 }}>
               <Line data={chartData} options={chartOptions} />
             </div>
@@ -623,16 +623,16 @@ export default function Home() {
             </div>
           </div>
           {/* Stats Section */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 32, marginBottom: 32 }}>
-            <div style={{ background: colors.reportStatBg, borderRadius: 12, padding: '18px 32px', minWidth: 120, textAlign: 'center' }}>
+          <div style={{ display: 'flex', flexFlow: 'wrap',justifyContent: 'center', gap: 16, marginBottom: 32 }}>
+            <div style={{ background: colors.reportStatBg, borderRadius: 12, padding: '16px 32px', minWidth: 120, textAlign: 'center' }}>
               <div style={{ fontWeight: 700, fontSize: 28, color: colors.reportStatText }}>{stats.totalMessages}</div>
               <div style={{ color: colors.reportStatLabel, fontSize: 15, marginTop: 4 }}>Total Messages</div>
             </div>
-            <div style={{ background: colors.reportStatBg, borderRadius: 12, padding: '18px 32px', minWidth: 120, textAlign: 'center' }}>
+            <div style={{ background: colors.reportStatBg, borderRadius: 12, padding: '16px 32px', minWidth: 120, textAlign: 'center' }}>
               <div style={{ fontWeight: 700, fontSize: 28, color: colors.reportStatText }}>{stats.minutes}</div>
               <div style={{ color: colors.reportStatLabel, fontSize: 15, marginTop: 4 }}>Minutes</div>
             </div>
-            <div style={{ background: colors.reportStatBg, borderRadius: 12, padding: '18px 32px', minWidth: 120, textAlign: 'center' }}>
+            <div style={{ background: colors.reportStatBg, borderRadius: 12, padding: '16px 32px', minWidth: 120, textAlign: 'center' }}>
               <div style={{ fontWeight: 700, fontSize: 28, color: colors.reportStatText }}>{stats.yourMessages}</div>
               <div style={{ color: colors.reportStatLabel, fontSize: 15, marginTop: 4 }}>Your Messages</div>
             </div>
@@ -657,7 +657,7 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 32, gap: 16 }}>
+          <div style={{ display: 'flex', flexFlow: 'wrap', justifyContent: 'center', marginTop: 32, gap: 16 }}>
             <button
               onClick={handleStartNewSession}
               style={{
@@ -848,7 +848,7 @@ export default function Home() {
             <div ref={chatEndRef} />
           </div>
           {/* Input bar */}
-          <div style={{ padding: '18px', background: colors.chatBg, borderBottomLeftRadius: 16, borderBottomRightRadius: 16, borderTop: '1px solid #e3e6ea' }}>
+          <div style={{ marginLeft: '18px', marginRight: '18px', marginBottom: '18px', background: 'white', borderRadius: 24 }}>
             <ChatFunctionality onNewMessage={handleNewMessage} messages={messages} theme={'light'} />
           </div>
         </div>

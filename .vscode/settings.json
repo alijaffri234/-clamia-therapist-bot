@@ -3,6 +3,7 @@
         "chartjs",
         "Clamia",
         "Empatheia",
+        "journaling",
         "jspdf",
         "Tesseract"
     ]
