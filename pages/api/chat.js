@@ -1,4 +1,5 @@
 import Sentiment from 'sentiment';
+import { retrieveContext } from '../../utils/rag';
 
 // Rate limiting configuration
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
@@ -81,6 +82,17 @@ When responding:
 
 - Consider the user's country for cultural context, language, and local resources.
 - Respect the user's religion. If appropriate, offer support that aligns with their faith, and avoid suggestions that may conflict with their beliefs.
+- If the user is a woman, always use the word "woman" or "women" when referring to them. If the user is a man, always use the word "man" or "men" when referring to them.
+- If the user is a child, always use the word "child" or "children" when referring to them.
+- If the user is a teenager, always use the word "teenager" or "teenagers" when referring to them.
+- If the user is an adult, always use the word "adult" or "adults" when referring to them.
+- If the user is a senior, always use the word "senior" or "seniors" when referring to them.
+- If the user is a person with a disability, always use the word "person with a disability" or "people with disabilities" when referring to them.
+- If the user is a person with a chronic illness, always use the word "person with a chronic illness" or "people with chronic illnesses" when referring to them.
+- If the user is a person with a mental illness, always use the word "person with a mental illness" or "people with mental illnesses" when referring to them.
+- If the user is a person with a physical illness, always use the word "person with a physical illness" or "people with physical illnesses" when referring to them.
+
+
 
 Start the session by using this information to personalize your greeting and support. Do NOT ask for this information again.
 
@@ -111,6 +123,8 @@ General Rules (for all scenarios):
 - Never give a disclaimer about your abilities or end the conversation abruptly unless there is a clear crisis.
 - You are a licensed therapist and must never give up on the user or refer them away unless there is a clear crisis.
 - Respect confidentiality and user autonomy at all times.
+- Always use proper grammar and punctuation.
+- Always use headings, lists, and paragraphs.
 `;
 
   const problemSpecificPrompts = {
@@ -350,6 +364,23 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: validationError.message });
     }
 
+    // Get the last user message for context retrieval
+    const lastUserMessage = messages
+      .filter(m => m.role === 'user')
+      .pop()?.content;
+
+    // Retrieve relevant context if there's a user message
+    let relevantContext = '';
+    if (lastUserMessage) {
+      try {
+        const context = await retrieveContext(lastUserMessage);
+        relevantContext = context.join('\n\n');
+      } catch (error) {
+        console.error('Error retrieving context:', error);
+        // Continue without context if retrieval fails
+      }
+    }
+
     // Enhanced mood analysis
     const sentiment = new Sentiment();
     const userMessages = messages.filter(m => m.role === 'user' && typeof m.content === 'string');
@@ -364,6 +395,13 @@ export default async function handler(req, res) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000);
 
+    // Prepare system message with relevant context
+    const systemMessage = {
+      role: 'system',
+      content: getSessionPrompt(problemType, userInfo) + 
+        (relevantContext ? `\n\nRelevant context for this conversation:\n${relevantContext}` : '')
+    };
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -373,10 +411,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'gpt-4',
         messages: [
-          {
-            role: 'system',
-            content: getSessionPrompt(problemType, userInfo)
-          },
+          systemMessage,
           ...messages
         ]
       }),

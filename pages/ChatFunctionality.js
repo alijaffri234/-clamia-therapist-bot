@@ -19,8 +19,8 @@ export default function ChatFunctionality({ onNewMessage, messages, theme = 'dar
   const sendMessage = async () => {
     if (!input.trim() || loading) return;
     setLoading(true);
-    await onNewMessage({ role: 'user', content: input });
     setInput('');
+    await onNewMessage({ role: 'user', content: input });
     setLoading(false);
   };
 
