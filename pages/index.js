@@ -14,7 +14,6 @@ import {
 } from 'chart.js';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { initializeKnowledgeBase, retrieveContext } from '../utils/rag';
 import TypingImpulse from '../components/TypingImpulse';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
@@ -385,34 +384,6 @@ export default function Home() {
   const chatEndRef = useRef(null);
   const reportRef = useRef(null);
 
-  // Initialize RAG system
-  useEffect(() => {
-    const initRAG = async () => {
-      try {
-        // Initialize the knowledge base
-        await initializeKnowledgeBase();
-        console.log('RAG system initialized successfully');
-        
-        // Set up periodic reinitialization (every 24 hours)
-        const reinitInterval = setInterval(async () => {
-          try {
-            await initializeKnowledgeBase();
-            console.log('RAG system reinitialized successfully');
-          } catch (error) {
-            console.error('Error reinitializing RAG system:', error);
-          }
-        }, 24 * 60 * 60 * 1000); // 24 hours
-        
-        // Cleanup interval on component unmount
-        return () => clearInterval(reinitInterval);
-      } catch (error) {
-        console.error('Error initializing RAG system:', error);
-      }
-    };
-    
-    initRAG();
-  }, []);
-
   // Set personalized, situation-specific welcome message after onboarding
   useEffect(() => {
     if (userInfo && messages.length === 0) {
@@ -450,52 +421,34 @@ export default function Home() {
   }, [showSummary, clientReportDate]);
 
   const handleNewMessage = useCallback(async (message) => {
-    // Append the required text to user messages before sending to backend
     const messageToSend = {
       ...message,
-      content: message.role === 'user' ? message.content : message.content,
       timestamp: new Date().toISOString()
     };
     setMessages(prevMessages => [...prevMessages, messageToSend]);
-    
+
     if (message.role === 'user') {
       setIsBotTyping(true);
       try {
-        // Get relevant context for the user's message
-        const context = await retrieveContext(message.content);
-        
-        // Prepare the message with context
-        const messagesWithContext = [
-          ...messages,
-          messageToSend,
-          {
-            role: 'system',
-            content: `Relevant context for this conversation:\n${context.join('\n\n')}`,
-            timestamp: new Date().toISOString()
-          }
-        ];
-
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            messages: messagesWithContext, 
-            problemType: userInfo?.therapyType, 
-            userInfo 
+          body: JSON.stringify({
+            messages: [...messages, messageToSend],
+            problemType: userInfo?.therapyType,
+            userInfo
           }),
         });
-        
         const data = await response.json();
         setIsBotTyping(false);
-        
+
         if (data.reply) {
-          setMessages(prevMessages => [...prevMessages, { 
-            ...data.reply, 
-            timestamp: new Date().toISOString() 
+          setMessages(prevMessages => [...prevMessages, {
+            ...data.reply,
+            timestamp: new Date().toISOString()
           }]);
         }
       } catch (error) {
-        console.error('Error in chat:', error);
         setIsBotTyping(false);
         setMessages(prevMessages => [...prevMessages, {
           role: 'assistant',
@@ -938,37 +891,27 @@ function getWelcomeMessage(userInfo) {
   return `Hi ${userInfo.name}, I'm here to support you. I understand you are seeking help with ${userInfo.therapyType.replace(/_/g, ' ')}. How can I support you today?`;
 }
 
-async function getInitialSupportMessage(userInfo) {
+function getInitialSupportMessage(userInfo) {
   const { name, therapyType } = userInfo;
   const type = therapyType ? therapyType.toLowerCase() : '';
-  
-  try {
-    // Get relevant context for the therapy type
-    const context = await retrieveContext(`Initial support message for ${type} therapy`);
-    
-    // Base messages with RAG-enhanced content
-    const messages = {
-      depression: `Hi ${name}, I'm here to support you. I understand you're seeking help with depression. ${context[0] || "Remember, you're not alone and it's okay to feel this way."} Would you like to share what's been weighing on your mind lately?`,
-      
-      anxiety: `Hi ${name}, I'm here for you. I see you're seeking help with anxiety. ${context[0] || "Let's take a deep breath together."} Would you like to talk about what's making you feel anxious right now?`,
-      
-      stress: `Hi ${name}, I'm here to help you manage stress. ${context[0] || "Life can be overwhelming, but together we can find ways to cope."} What's been causing you stress lately?`,
-      
-      grief: `Hi ${name}, I'm here to support you through your grief. ${context[0] || "It's okay to feel a range of emotions."} Would you like to talk about your experience?`,
-      
-      self_esteem: `Hi ${name}, I'm here to help you build your self-esteem. ${context[0] || "Let's explore your strengths together."} What would you like to talk about today?`,
-      
-      family_therapy: `Hi ${name}, I'm here to support you with family therapy. ${context[0] || "Family relationships can be complex."} Would you like to share what's on your mind?`,
-      
-      career_counseling: `Hi ${name}, I'm here to help you with career counseling. ${context[0] || "Let's talk about your goals and any challenges you're facing at work or in your career path."}`,
-      
-      relationship: `Hi ${name}, I'm here to support you with relationship concerns. ${context[0] || "Relationships can be challenging, but you're not alone."} Would you like to talk about what's been happening?`
-    };
-
-    return messages[type] || `Hi ${name}, I'm here to support you. How can I help you today?`;
-  } catch (error) {
-    console.error('Error retrieving context:', error);
-    // Fallback to default message if RAG fails
-    return `Hi ${name}, I'm here to support you. How can I help you today?`;
+  switch (type) {
+    case 'depression':
+      return `Hi ${name}, I'm here to support you. I understand you're seeking help with depression. Remember, you're not alone and it's okay to feel this way. Would you like to share what's been weighing on your mind lately?`;
+    case 'anxiety':
+      return `Hi ${name}, I'm here for you. I see you're seeking help with anxiety. Let's take a deep breath together. Would you like to talk about what's making you feel anxious right now?`;
+    case 'stress':
+      return `Hi ${name}, I'm here to help you manage stress. Life can be overwhelming, but together we can find ways to cope. What's been causing you stress lately?`;
+    case 'grief':
+      return `Hi ${name}, I'm here to support you through your grief. It's okay to feel a range of emotions. Would you like to talk about your experience?`;
+    case 'self_esteem':
+      return `Hi ${name}, I'm here to help you build your self-esteem. Let's explore your strengths together. What would you like to talk about today?`;
+    case 'family_therapy':
+      return `Hi ${name}, I'm here to support you with family therapy. Family relationships can be complex. Would you like to share what's on your mind?`;
+    case 'career_counseling':
+      return `Hi ${name}, I'm here to help you with career counseling. Let's talk about your goals and any challenges you're facing at work or in your career path.`;
+    case 'relationship':
+      return `Hi ${name}, I'm here to support you with relationship concerns. Relationships can be challenging, but you're not alone. Would you like to talk about what's been happening?`;
+    default:
+      return `Hi ${name}, I'm here to support you. How can I help you today?`;
   }
 }
