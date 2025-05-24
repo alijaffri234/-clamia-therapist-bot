@@ -371,6 +371,55 @@ function OnboardingForm({ onComplete }) {
   );
 }
 
+// Custom Markdown renderers for ChatGPT-like style
+const markdownComponents = {
+  h1: ({node, ...props}) => <h2 style={{fontWeight: 700, fontSize: 22, margin: '18px 0 10px 0', lineHeight: 1.3}} {...props} />,
+  h2: ({node, ...props}) => <h3 style={{fontWeight: 700, fontSize: 18, margin: '16px 0 8px 0', lineHeight: 1.3}} {...props} />,
+  h3: ({node, ...props}) => <h4 style={{fontWeight: 700, fontSize: 16, margin: '14px 0 6px 0', lineHeight: 1.3}} {...props} />,
+  p: ({node, ...props}) => <p style={{margin: '0 0 14px 0', lineHeight: 1.6}} {...props} />,
+  ul: ({node, ...props}) => <ul style={{margin: '0 0 14px 18px', padding: 0, lineHeight: 1.6}} {...props} />,
+  ol: ({node, ...props}) => <ol style={{margin: '0 0 14px 18px', padding: 0, lineHeight: 1.6}} {...props} />,
+  li: ({node, ...props}) => <li style={{marginBottom: 6, lineHeight: 1.6}} {...props} />,
+  code: ({inline, className, children, ...props}) =>
+    inline
+      ? <code style={{background: '#f4f4f4', borderRadius: 4, padding: '2px 6px', fontSize: 13, fontFamily: 'monospace'}} {...props}>{children}</code>
+      : <pre style={{background: '#23272f', color: '#fff', borderRadius: 6, padding: 14, fontSize: 14, overflowX: 'auto', margin: '14px 0'}}><code>{children}</code></pre>,
+  blockquote: ({node, ...props}) => <blockquote style={{borderLeft: '4px solid #bfc9d6', margin: '0 0 14px 0', padding: '6px 0 6px 16px', color: '#6b7a90', background: '#f7f7fa', borderRadius: 6, fontStyle: 'italic', lineHeight: 1.6}} {...props} />,
+  strong: ({node, ...props}) => <strong style={{fontWeight: 700}} {...props} />,
+  em: ({node, ...props}) => <em style={{fontStyle: 'italic'}} {...props} />,
+  hr: () => <hr style={{border: 'none', borderTop: '1px solid #e3e6ea', margin: '18px 0'}} />,
+};
+
+// Utility to split text into sentences and group into lines of max N chars
+function splitTextIntoLineChunks(text, maxLen = 110) {
+  if (!text) return [];
+  // Split into paragraphs
+  const paragraphs = text.split(/\n\n+/);
+  const result = [];
+  for (const para of paragraphs) {
+    // Split into sentences (., ?, !)
+    const sentences = para.match(/[^.!?\n]+[.!?\n]?/g) || [para];
+    let line = '';
+    for (const sentence of sentences) {
+      if ((line + sentence).length > maxLen && line.length > 0) {
+        result.push(line.trim());
+        line = '';
+      }
+      line += sentence;
+      if (line.length >= maxLen) {
+        result.push(line.trim());
+        line = '';
+      }
+    }
+    if (line.trim()) result.push(line.trim());
+    // Add a blank line to separate paragraphs
+    result.push('');
+  }
+  // Remove last blank line if present
+  if (result.length && result[result.length-1] === '') result.pop();
+  return result;
+}
+
 export default function Home() {
   // All hooks must be declared at the top, before any conditional return
   const [userInfo, setUserInfo] = useState(null);
@@ -679,7 +728,19 @@ export default function Home() {
                   {msg.role === 'user' ? 'You' : 'Clamia'}
                 </div>
                 <div style={{ flex: 1, color: colors.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 340 }}>
-                  {msg.content}
+                  {msg.image ? (
+                    <img src={msg.image} alt="Uploaded" style={{ maxWidth: '100%', borderRadius: 12 }} />
+                  ) : (
+                    msg.role === 'assistant' ? (
+                      splitTextIntoLineChunks(msg.content).map((line, idx) =>
+                        line === ''
+                          ? <div key={idx} style={{ height: 8 }} />
+                          : <p key={idx} style={{ margin: 0, marginBottom: 12, lineHeight: 1.6 }}>{line}</p>
+                      )
+                    ) : (
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    )
+                  )}
                 </div>
               </div>
             ))}
@@ -815,7 +876,7 @@ export default function Home() {
                     background: msg.role === 'user' ? colors.userBubble : colors.botBubble,
                     color: msg.role === 'user' ? colors.userText : colors.text,
                     borderRadius: 16,
-                    padding: '14px 18px',
+                    padding: '12px 16px',
                     maxWidth: '75%',
                     fontSize: 14,
                     wordBreak: 'break-word',
@@ -823,16 +884,22 @@ export default function Home() {
                     marginRight: msg.role === 'user' ? 0 : 40,
                     position: 'relative',
                     boxShadow: msg.role === 'user' ? '0 1px 4px rgba(25,34,58,0.10)' : '0 0px 1px black',
-                    lineHeight: '1.6',
-                    whiteSpace: 'pre-wrap'
+                    lineHeight: 1.6,
+                    //whiteSpace: 'pre-wrap'
                   }}
                 >
                   {msg.image ? (
                     <img src={msg.image} alt="Uploaded" style={{ maxWidth: '100%', borderRadius: 12 }} />
                   ) : (
-                    <ReactMarkdown>
-                      {msg.role === 'assistant' ? formatMessageContent(msg.content) : msg.content}
-                    </ReactMarkdown>
+                    msg.role === 'assistant' ? (
+                      splitTextIntoLineChunks(msg.content).map((line, idx) =>
+                        line === ''
+                          ? <div key={idx} style={{ height: 8 }} />
+                          : <p key={idx} style={{ margin: 0, marginBottom: 12, lineHeight: 1.6 }}>{line}</p>
+                      )
+                    ) : (
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    )
                   )}
                 </div>
                 <div style={{
