@@ -420,6 +420,11 @@ function splitTextIntoLineChunks(text, maxLen = 110) {
   return result;
 }
 
+function isMarkdownList(para) {
+  // Detects numbered or bulleted Markdown lists
+  return /^\s*(\d+\.|[-*])\s/m.test(para);
+}
+
 export default function Home() {
   // All hooks must be declared at the top, before any conditional return
   const [userInfo, setUserInfo] = useState(null);
@@ -679,7 +684,7 @@ export default function Home() {
             border: `1px solid ${colors.reportBorder}`,
             borderRadius: 16,
             padding: '24px 16px 24px 16px',
-            maxWidth: 800,
+            maxWidth: 1080,
             width: '100%',
             boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
             margin: 24
@@ -727,15 +732,22 @@ export default function Home() {
                 <div style={{ width: 100, color: msg.role === 'user' ? colors.reportSenderUser : colors.reportSenderBot, fontWeight: 600 }}>
                   {msg.role === 'user' ? 'You' : 'Clamia'}
                 </div>
-                <div style={{ flex: 1, color: colors.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 340 }}>
+                <div style={{ flex: 1, color: colors.text, overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 800 }}>
                   {msg.image ? (
                     <img src={msg.image} alt="Uploaded" style={{ maxWidth: '100%', borderRadius: 12 }} />
                   ) : (
                     msg.role === 'assistant' ? (
-                      splitTextIntoLineChunks(msg.content).map((line, idx) =>
-                        line === ''
-                          ? <div key={idx} style={{ height: 8 }} />
-                          : <p key={idx} style={{ margin: 0, marginBottom: 12, lineHeight: 1.6 }}>{line}</p>
+                      // Split into paragraphs
+                      msg.content.split(/\n\n+/).map((para, pIdx) =>
+                        isMarkdownList(para) ? (
+                          <ReactMarkdown key={pIdx} components={markdownComponents} skipHtml>{para}</ReactMarkdown>
+                        ) : (
+                          splitTextIntoLineChunks(para).map((line, idx) =>
+                            line === ''
+                              ? <div key={pIdx + '-' + idx} style={{ height: 8 }} />
+                              : <p key={pIdx + '-' + idx} style={{ margin: 0, marginBottom: 12, lineHeight: 1.6 }}>{line}</p>
+                          )
+                        )
                       )
                     ) : (
                       <ReactMarkdown>{msg.content}</ReactMarkdown>
@@ -892,10 +904,17 @@ export default function Home() {
                     <img src={msg.image} alt="Uploaded" style={{ maxWidth: '100%', borderRadius: 12 }} />
                   ) : (
                     msg.role === 'assistant' ? (
-                      splitTextIntoLineChunks(msg.content).map((line, idx) =>
-                        line === ''
-                          ? <div key={idx} style={{ height: 8 }} />
-                          : <p key={idx} style={{ margin: 0, marginBottom: 12, lineHeight: 1.6 }}>{line}</p>
+                      // Split into paragraphs
+                      msg.content.split(/\n\n+/).map((para, pIdx) =>
+                        isMarkdownList(para) ? (
+                          <ReactMarkdown key={pIdx} components={markdownComponents} skipHtml>{para}</ReactMarkdown>
+                        ) : (
+                          splitTextIntoLineChunks(para).map((line, idx) =>
+                            line === ''
+                              ? <div key={pIdx + '-' + idx} style={{ height: 8 }} />
+                              : <p key={pIdx + '-' + idx} style={{ margin: 0, marginBottom: 12, lineHeight: 1.6 }}>{line}</p>
+                          )
+                        )
                       )
                     ) : (
                       <ReactMarkdown>{msg.content}</ReactMarkdown>
