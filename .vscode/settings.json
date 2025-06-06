@@ -3,10 +3,13 @@
         "blockquotes",
         "chartjs",
         "Clamia",
+        "cuid",
         "Empatheia",
+        "Heroicon",
         "journaling",
         "jspdf",
         "langchain",
+        "nextauth",
         "reinit",
         "Tesseract"
     ]
