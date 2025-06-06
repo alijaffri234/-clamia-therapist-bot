@@ -1,10 +1,11 @@
 // ChatFunctionality.js - Handles Text Chat
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 export default function ChatFunctionality({ onNewMessage, messages, theme = 'dark' }) {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const textareaRef = useRef(null);
 
   const isDark = theme === 'dark';
   const colors = {
@@ -16,6 +17,21 @@ export default function ChatFunctionality({ onNewMessage, messages, theme = 'dar
     border: isDark ? '#232323' : '#e3e6ea'
   };
 
+  // Function to adjust textarea height
+  const adjustTextareaHeight = () => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      const newHeight = Math.min(textarea.scrollHeight, 120); // Max height of 120px
+      textarea.style.height = `${newHeight}px`;
+    }
+  };
+
+  // Adjust height when input changes
+  useEffect(() => {
+    adjustTextareaHeight();
+  }, [input]);
+
   const sendMessage = async () => {
     if (!input.trim() || loading) return;
     setLoading(true);
@@ -25,7 +41,8 @@ export default function ChatFunctionality({ onNewMessage, messages, theme = 'dar
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
       sendMessage();
     }
   };
@@ -122,14 +139,10 @@ export default function ChatFunctionality({ onNewMessage, messages, theme = 'dar
       {/* Text Input Field */}
       <div style={{ position: 'relative', width: '100%' }}>
         <textarea
+          ref={textareaRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyPress={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault();
-              sendMessage();
-            }
-          }}
+          onKeyPress={handleKeyPress}
           placeholder="Enter your message..."
           style={{
             width: '100%',
@@ -147,7 +160,8 @@ export default function ChatFunctionality({ onNewMessage, messages, theme = 'dar
             resize: 'none',
             fontFamily: 'system-ui, Arial, sans-serif',
             lineHeight: '1.5',
-            overflowY: 'auto'
+            overflowY: 'auto',
+            transition: 'height 0.1s ease-out'
           }}
           disabled={loading}
           rows={1}
