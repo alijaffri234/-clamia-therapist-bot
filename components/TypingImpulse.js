@@ -19,13 +19,19 @@ export default function TypingImpulse() {
           background-color: #7E3AED;
           border-radius: 50%;
           display: inline-block;
-          animation: bounce 1.4s infinite both;
+          animation: bounce 0.5s infinite both;
         }
-        .dot:nth-child(2) { animation-delay: 0.2s; }
-        .dot:nth-child(3) { animation-delay: 0.4s; }
+        .dot:nth-child(2) { animation-delay: 0.1s; }
+        .dot:nth-child(3) { animation-delay: 0.2s; }
         @keyframes bounce {
-          0%, 80%, 100% { transform: scale(0.7); }
-          40% { transform: scale(1.2); }
+          0%, 80%, 100% { 
+            transform: scale(0.6);
+            opacity: 0.6;
+          }
+          40% { 
+            transform: scale(1.4);
+            opacity: 1;
+          }
         }
       `}</style>
     </div>
